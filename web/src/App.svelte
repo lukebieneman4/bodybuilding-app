@@ -16,7 +16,7 @@
     profile && store.weighIns.length >= 2 ? analyzeWeight(store.weighIns, profile) : null
   );
   const insights = $derived(
-    analysis && profile ? buildInsights(analysis, profile, store.weighIns) : []
+    analysis && profile ? buildInsights(analysis, profile, store.weighIns, store.calories) : []
   );
 
   async function onImport(e: Event): Promise<void> {

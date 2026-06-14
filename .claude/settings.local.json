@@ -12,6 +12,13 @@
       "Bash(mkdir *)",
       "Bash(which *)",
       "Bash(jq *)",
+      "Bash(npm run *)",
+      "Bash(npm test)",
+      "Bash(npm test *)",
+      "Bash(node *)",
+      "Bash(npx vitest *)",
+      "Bash(python3 *)",
+      "Bash(bash web/*)",
       "WebSearch",
       "WebFetch",
       "Bash(exit 0)"

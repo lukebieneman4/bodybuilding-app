@@ -38,7 +38,9 @@
   );
   const etaText = $derived(
     a.current.etaWeeks === null
-      ? 'goal pace unclear'
+      ? Math.abs(a.current.ratePct) < 0.1
+        ? 'holding near current weight'
+        : 'not trending toward goal'
       : a.current.etaRange
         ? `goal in ~${Math.round(a.current.etaWeeks)} wk (${Math.round(a.current.etaRange[0])}–${Math.round(a.current.etaRange[1])} wk)`
         : `projected goal in ~${Math.round(a.current.etaWeeks)} wk`

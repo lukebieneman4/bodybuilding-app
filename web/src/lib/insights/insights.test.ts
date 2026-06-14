@@ -17,12 +17,32 @@ function profile(over: Partial<Profile> = {}): Profile {
   };
 }
 
-function analysis(trendLb: number, ratePct: number, status: TrackStatus, lastDay = 70): WeightAnalysis {
+interface AOpts {
+  lastDay?: number;
+  idealKgWk?: number;
+  etaWeeks?: number | null;
+  targetDateDay?: number | null;
+}
+function analysis(trendLb: number, ratePct: number, status: TrackStatus, o: AOpts = {}): WeightAnalysis {
+  const trendKg = lbToKg(trendLb);
+  const ratePerWkKg = (ratePct / 100) * trendKg;
   return {
     hasEnough: true,
     units: 'lb',
-    lastDay,
-    current: { trendDisplay: trendLb, ratePct, status, ratePerWk: 0, idealRatePerWk: 0, etaWeeks: null, etaRange: null },
+    lastDay: o.lastDay ?? 70,
+    targetDateDay: o.targetDateDay ?? null,
+    current: {
+      trendDisplay: trendLb,
+      trendKg,
+      ratePerWk: 0,
+      ratePerWkKg,
+      ratePct,
+      idealRatePerWk: 0,
+      idealRatePerWkKg: o.idealKgWk ?? -0.45,
+      status,
+      etaWeeks: o.etaWeeks ?? null,
+      etaRange: null,
+    },
   } as unknown as WeightAnalysis;
 }
 
@@ -53,8 +73,28 @@ describe('cited insights', () => {
   });
 
   it('suggests a diet break after 10+ weeks', () => {
-    const list = ids(profile(), analysis(195, -0.6, 'on', 84), 30);
+    const list = ids(profile(), analysis(195, -0.6, 'on', { lastDay: 84 }), 30);
     expect(list.some((x) => x.id === 'diet-break')).toBe(true);
+  });
+
+  it('gives a computed (non-fixed) kcal adjustment when behind pace', () => {
+    // actual -0.3%/wk vs ideal -0.5 kg/wk → a specific, derived number (not 150)
+    const list = ids(profile(), analysis(195, -0.3, 'slow', { idealKgWk: -0.5 }), 30);
+    const behind = list.find((x) => x.id === 'behind');
+    expect(behind).toBeDefined();
+    expect(behind!.detail).toMatch(/cut about \d+ kcal\/day/);
+    expect(behind!.detail).not.toMatch(/150 kcal/); // proves it is computed
+  });
+
+  it('reports being behind the target date', () => {
+    const list = ids(
+      profile({ targetDate: '2026-09-01' }),
+      analysis(195, -0.4, 'on', { targetDateDay: 84, etaWeeks: 8, lastDay: 70 }),
+      30
+    );
+    const td = list.find((x) => x.id === 'target-date');
+    expect(td).toBeDefined();
+    expect(td!.title.toLowerCase()).toContain('behind');
   });
 
   it('every insight carries a citation', () => {

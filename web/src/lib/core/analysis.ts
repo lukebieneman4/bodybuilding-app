@@ -26,9 +26,12 @@ export interface WeightAnalysis {
   lastDay: number;
   current: {
     trendDisplay: number;
+    trendKg: number;
     ratePerWk: number; // display units/wk, signed (negative = losing)
+    ratePerWkKg: number; // kg/wk, signed (for energy math)
     ratePct: number; // %bodyweight/wk, signed
     idealRatePerWk: number;
+    idealRatePerWkKg: number; // kg/wk, signed
     status: TrackStatus;
     etaWeeks: number | null;
     etaRange: [number, number] | null;
@@ -69,12 +72,16 @@ export function analyzeWeight(weighIns: WeighIn[], profile: Profile): WeightAnal
   const ideal = idealCurve(startKg, goalKg, prepDays);
   const idealSlopeNow = ideal.slopeAt(lastDay); // kg/day
 
-  // projection (line only; uncertainty surfaced as an ETA range, not a cone)
-  const proj = projectToGoal(s.levelFilteredEnd, rateKgDay, s.PEnd, goalKg, {
-    maxDays: prepDays - lastDay + 21,
-  });
-  const projDaysAbs = proj.days.map((d) => d + lastDay);
+  // Search far enough to find the goal crossing at the ACTUAL trailing rate
+  // (which is often slower than the target rate — that is the behind-pace case
+  // where an ETA matters most). projectToGoal stops ~2 weeks past the crossing,
+  // so the drawn line stays short when a crossing exists; only when the trend
+  // isn't heading toward goal (maintaining / wrong direction) do we truncate.
+  const proj = projectToGoal(s.levelFilteredEnd, rateKgDay, s.PEnd, goalKg, { maxDays: 760 });
   const goalEtaDay = proj.goalEta === null ? null : proj.goalEta + lastDay;
+  const drawTo = goalEtaDay === null ? Math.min(proj.days.length, 29) : proj.days.length;
+  const projDaysAbs = proj.days.slice(0, drawTo).map((d) => d + lastDay);
+  const projLevelKg = proj.level.slice(0, drawTo);
 
   // status
   const diffWk = (rateKgDay - idealSlopeNow) * 7;
@@ -110,9 +117,12 @@ export function analyzeWeight(weighIns: WeighIn[], profile: Profile): WeightAnal
   const idealVals = ideal.values.map(toDisp);
   const goalDisplay = toDisp(goalKg);
 
-  const allY = [...obs, ...trend, goalDisplay, toDisp(proj.level[proj.level.length - 1])];
+  const projLevelDisp = projLevelKg.map(toDisp);
+  const allY = [...obs, ...trend, goalDisplay, ...projLevelDisp];
   const yMin = Math.min(...allY) - 1.5;
-  const yMax = Math.max(...obs, ...trend) + 1.5;
+  const yMax = Math.max(...allY) + 1.5;
+  const xMax = Math.max(prepDays, goalEtaDay ?? 0, projDaysAbs[projDaysAbs.length - 1] ?? 0) + 4;
+  const lastTrendKg = trendKg[trendKg.length - 1];
 
   return {
     hasEnough: true,
@@ -123,20 +133,23 @@ export function analyzeWeight(weighIns: WeighIn[], profile: Profile): WeightAnal
     bandLo,
     bandHi,
     ideal: { days: ideal.values.map((_, i) => i), values: idealVals },
-    projection: { days: projDaysAbs, level: proj.level.map(toDisp), goalEtaDay },
+    projection: { days: projDaysAbs, level: projLevelDisp, goalEtaDay },
     goalDisplay,
     targetDateDay: profile.targetDate ? dayDiff(first, profile.targetDate) : null,
     lastDay,
     current: {
-      trendDisplay: toDisp(trendKg[trendKg.length - 1]),
+      trendDisplay: toDisp(lastTrendKg),
+      trendKg: lastTrendKg,
       ratePerWk: rateFromKg(rateKgDay * 7, units),
-      ratePct: (rateKgDay * 7 * 100) / trendKg[trendKg.length - 1],
+      ratePerWkKg: rateKgDay * 7,
+      ratePct: (rateKgDay * 7 * 100) / lastTrendKg,
       idealRatePerWk: rateFromKg(idealSlopeNow * 7, units),
+      idealRatePerWkKg: idealSlopeNow * 7,
       status,
       etaWeeks,
       etaRange,
     },
-    xDomain: [-2, prepDays + 4],
+    xDomain: [-2, xMax],
     yDomain: [yMin, yMax],
   };
 }

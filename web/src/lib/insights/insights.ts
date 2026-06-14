@@ -1,10 +1,11 @@
 import type { WeightAnalysis } from '../core/analysis';
-import type { Profile, WeighIn } from '../data/types';
-import { toKg } from '../data/types';
+import type { Profile, WeighIn, CalorieEntry } from '../data/types';
 
 /**
  * Rule-based, cited insights. Every recommendation traces to a reference — no
- * "plausible-looking" advice. Tuned to be conservative for injury recovery.
+ * "plausible-looking" advice. Caloric adjustments are computed from the actual
+ * gap to the ideal pace, not fixed numbers: a rate gap of Δ kg/wk needs about
+ * Δ × 7700 / 7 kcal/day of intake change (≈7700 kcal per kg of body mass).
  *
  * Sources:
  *  - Helms, Aragon & Fitschen (2014), JISSN 11:20 — loss rate 0.5-1%/wk;
@@ -17,6 +18,8 @@ import { toKg } from '../data/types';
  *    breaks at maintenance improved fat loss and post-diet maintenance.
  *  - Tipton (2015), Sports Med 45(S1):S93 — adequate protein/energy supports
  *    recovery from injury; avoid large deficits while healing.
+ *  - Hall et al. (2008), Am J Clin Nutr 88:1495 — energy density of body-mass
+ *    change (~7700 kcal/kg) used for the intake-adjustment math.
  */
 
 export type Severity = 'good' | 'info' | 'warn';
@@ -30,18 +33,47 @@ export interface Insight {
 }
 
 const RECOVERY_RE = /acl|surger|injur|recover|rehab/i;
+const KCAL_PER_KG = 7700;
+
+const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
+const bucket = (kcal: number): number => Math.max(25, Math.round(kcal / 25) * 25);
+
+function recentIntake(calories: CalorieEntry[]): number | null {
+  if (calories.length < 3) return null;
+  const last = [...calories].sort((a, b) => a.date.localeCompare(b.date)).slice(-14);
+  return Math.round(last.reduce((s, c) => s + c.kcal, 0) / last.length);
+}
+
+/** Intake change (kcal/day) that would move the actual rate to the ideal pace. */
+function kcalAdjustment(
+  analysis: WeightAnalysis,
+  calories: CalorieEntry[]
+): { kcal: number; dir: 'cut' | 'add'; phrase: string } {
+  const deltaSigned = ((analysis.current.idealRatePerWkKg - analysis.current.ratePerWkKg) * KCAL_PER_KG) / 7;
+  const kcal = bucket(Math.abs(deltaSigned));
+  const dir: 'cut' | 'add' = deltaSigned < 0 ? 'cut' : 'add';
+  const change = dir === 'cut' ? `cut about ${kcal} kcal/day` : `add about ${kcal} kcal/day`;
+  const ri = recentIntake(calories);
+  let phrase = `${change}.`;
+  if (ri != null) {
+    const target = Math.round((ri + Math.sign(deltaSigned) * kcal) / 25) * 25;
+    phrase = `${change} — about ${target} kcal/day vs your recent ~${ri}.`;
+  }
+  return { kcal, dir, phrase };
+}
 
 export function buildInsights(
   analysis: WeightAnalysis,
   profile: Profile,
-  weighIns: WeighIn[]
+  weighIns: WeighIn[],
+  calories: CalorieEntry[] = []
 ): Insight[] {
   const out: Insight[] = [];
-  const units = profile.units;
-  const currentKg = toKg(analysis.current.trendDisplay, units);
-  const ratePct = analysis.current.ratePct; // signed, %bw/wk (negative = losing)
-  const losing = ratePct < 0;
-  const ratePctAbs = Math.abs(ratePct);
+  const c = analysis.current;
+  const currentKg = c.trendKg;
+  const losing = c.ratePct < 0;
+  const ratePctAbs = Math.abs(c.ratePct);
+  const idealPctAbs = Math.abs((c.idealRatePerWkKg * 100) / currentKg);
   const weeksLogged = analysis.lastDay / 7;
   const recovery = RECOVERY_RE.test(profile.notes ?? '');
   const inGoal =
@@ -62,45 +94,90 @@ export function buildInsights(
     });
   }
 
-  // 2) rate vs pace
-  if (losing && ratePctAbs > 1.0) {
+  // 2) rate vs pace — with a computed, numeric intake adjustment
+  if (!inGoal && losing && ratePctAbs > 1.0) {
+    const adj = kcalAdjustment(analysis, calories);
     out.push({
       id: 'too-fast',
       severity: 'warn',
       title: `Losing fast (${ratePctAbs.toFixed(2)}%/wk)`,
       detail:
-        'Above ~1%/wk, more of the loss tends to come from lean mass — a poor trade, and worse while recovering. Ease the deficit (about +200-300 kcal/day) or add a refeed and re-check in a week.',
-      cite: 'Garthe 2011; Helms 2014',
+        `Above ~1%/wk, more of the loss tends to come from lean mass — worse while recovering. ` +
+        `To return to your ~${idealPctAbs.toFixed(2)}%/wk plan, ${adj.phrase}`,
+      cite: 'Garthe 2011; Helms 2014; Hall 2008',
     });
-  } else if (analysis.current.status === 'fast') {
+  } else if (!inGoal && c.status === 'fast') {
+    const adj = kcalAdjustment(analysis, calories);
     out.push({
       id: 'slightly-fast',
       severity: 'info',
-      title: 'Slightly ahead of target pace',
-      detail:
-        'Fine short-term. If it persists 1-2 weeks, a small intake bump (~+150 kcal/day) brings you back toward your planned rate.',
-      cite: 'Helms 2014',
+      title: `Slightly fast (${ratePctAbs.toFixed(2)}%/wk vs ${idealPctAbs.toFixed(2)}%/wk plan)`,
+      detail: `Fine short-term. To ease back to plan, ${adj.phrase}`,
+      cite: 'Helms 2014; Hall 2008',
     });
-  } else if (analysis.current.status === 'slow') {
+  } else if (!inGoal && c.status === 'slow') {
+    const adj = kcalAdjustment(analysis, calories);
     out.push({
       id: 'behind',
       severity: 'info',
-      title: 'Behind your target pace',
+      title: `Behind pace (${ratePctAbs.toFixed(2)}%/wk vs ${idealPctAbs.toFixed(2)}%/wk plan)`,
       detail:
-        'To hit your date, a modest change — about -150 kcal/day or a few thousand more daily steps — nudges the trend back to plan.',
-      cite: 'Helms 2014',
+        `To get back on plan, ${adj.phrase} ` +
+        `(or burn the equivalent — roughly ${Math.round((adj.kcal / 100) * 2)}k extra steps/day).`,
+      cite: 'Helms 2014; Hall 2008',
     });
-  } else if (analysis.hasEnough && !inGoal) {
+  } else if (!inGoal && analysis.hasEnough) {
     out.push({
       id: 'on-track',
       severity: 'good',
-      title: `On track (${ratePct >= 0 ? '+' : ''}${ratePct.toFixed(2)}%/wk)`,
+      title: `On track (${c.ratePct >= 0 ? '+' : ''}${c.ratePct.toFixed(2)}%/wk)`,
       detail: 'Your trend matches the conservative pace you set. Hold course and keep logging.',
       cite: 'Garthe 2011',
     });
   }
 
-  // 3) recovery-aware caution
+  // 3) target-date reality check — makes the deadline matter
+  if (profile.targetDate && analysis.targetDateDay != null) {
+    const targetWeeks = (analysis.targetDateDay - analysis.lastDay) / 7;
+    if (c.etaWeeks == null) {
+      out.push({
+        id: 'target-date',
+        severity: 'warn',
+        title: 'Not on track for your target date',
+        detail: `At the current trend you are not heading to goal by ${profile.targetDate}. A deficit (or a larger one) is needed to make the date.`,
+        cite: 'Helms 2014',
+      });
+    } else {
+      const diff = c.etaWeeks - targetWeeks; // + = arriving late
+      if (Math.abs(diff) <= 1) {
+        out.push({
+          id: 'target-date',
+          severity: 'good',
+          title: 'On pace for your target date',
+          detail: `Projected to reach goal right around ${profile.targetDate}.`,
+          cite: 'Helms 2014',
+        });
+      } else if (diff > 1) {
+        out.push({
+          id: 'target-date',
+          severity: 'info',
+          title: `~${Math.round(diff)} wk behind your target date`,
+          detail: `Projected to hit goal about ${Math.round(diff)} week(s) after ${profile.targetDate}. The intake change above closes that gap; a softer date also works.`,
+          cite: 'Helms 2014',
+        });
+      } else {
+        out.push({
+          id: 'target-date',
+          severity: 'info',
+          title: `~${Math.round(-diff)} wk ahead of your target date`,
+          detail: `Projected to reach goal about ${Math.round(-diff)} week(s) before ${profile.targetDate} — you have buffer and could ease the deficit.`,
+          cite: 'Helms 2014',
+        });
+      }
+    }
+  }
+
+  // 4) recovery-aware caution
   if (recovery) {
     out.push({
       id: 'recovery',
@@ -112,7 +189,7 @@ export function buildInsights(
     });
   }
 
-  // 4) protein target (always useful in a deficit)
+  // 5) protein target
   if (losing) {
     const lo = Math.round(currentKg * 1.6);
     const hi = Math.round(currentKg * 2.2);
@@ -126,7 +203,7 @@ export function buildInsights(
     });
   }
 
-  // 5) diet-break suggestion for longer phases
+  // 6) diet-break suggestion for longer phases
   if (losing && weeksLogged >= 10) {
     out.push({
       id: 'diet-break',
@@ -138,7 +215,7 @@ export function buildInsights(
     });
   }
 
-  // 6) data sufficiency
+  // 7) data sufficiency
   if (weighIns.length < 10) {
     out.push({
       id: 'more-data',
