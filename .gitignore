@@ -1,0 +1,33 @@
+# macOS
+.DS_Store
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Core/.build/
+Core/.swiftpm/
+Package.resolved
+
+# Xcode
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+
+# Build products
+*.ipa
+*.dSYM
+*.dSYM.zip
+*.moved-aside
+*.hmap
+
+# Node / web app
+node_modules/
+web/node_modules/
+web/dist/
+web/.vite/
+.vite/
+*.log
+npm-debug.log*
