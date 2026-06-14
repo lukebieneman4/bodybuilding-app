@@ -2,46 +2,52 @@
 
 Status: ✅ done · 🚧 in progress · ⬜ not started
 
-## M0 — Project setup 🚧
-- ✅ Git repo, `.gitignore`, `CLAUDE.md`
-- ✅ Agent team (`.claude/agents/`)
-- ✅ Algorithm-core Swift package (`Core/`, module `BodybuildingCore`), verified via the dependency-free `CoreCheck` harness (`swift run`) — no Xcode needed
-- ✅ First verified brick: `EWMATrend` baseline + trend-recovery / noise-rejection / degenerate-input checks (all pass)
-- ⬜ Install Xcode (Mac App Store); migrate `CoreCheck` to an XCTest target (`swift test`)
-- ⬜ Decide app working name; first commit
+**Direction change (2026-06-14):** pivoted from native iOS to a **client-side web
+app** (`web/`, Vite + Svelte 5 + TypeScript, local-first). The Swift `Core/`
+package and the Python `prototypes/` are now the validated *reference oracles*;
+the living algorithm core is `web/src/lib/core/` (TS), verified to reproduce the
+Python golden values. Apple Developer enrollment / App Store are deferred until
+the web tool proves itself in real use (a diet phase). See
+`.claude` memory and CLAUDE.md.
 
-## M1 — Weight engine (core only — no Xcode) ⬜
-The hard, novel part. All verified with `swift test` against synthetic ground truth.
-- ⬜ State-space (Kalman) trend estimator: trend + slope + **confidence interval**, irregular sampling
-- ⬜ Ideal rate-of-loss curve: **non-linear** (target %BW/week, deceleration toward goal leanness, metabolic-adaptation aware, arrive-early buffer)
-- ⬜ Change detection: on-track / too-slow / too-fast with controlled false-positive rate and bounded detection latency
-- ⬜ Recommendation rules (rule-based, cited): hold / adjust intake / add activity / diet break
-- ⬜ Projection-to-goal with uncertainty
+## M0 — Project setup ✅
+- ✅ Git repo, `.gitignore`, `CLAUDE.md`, agent team, baseline commit
+- ✅ Swift `Core/` (BodybuildingCore) + `CoreCheck` (EWMA baseline) — reference
+- ✅ Python `prototypes/` M1 estimator (Kalman + ideal curve), Monte-Carlo validated
+- ✅ Node toolchain installed (~/.local/node; PATH in shell profiles)
 
-## M2 — Weight app shell (needs Xcode) ⬜
-- ⬜ SwiftData model + iCloud/CloudKit sync
-- ⬜ Manual weigh-in entry + HealthKit read (smart scales)
-- ⬜ Goal setup (e.g., "16-week prep from 15% BF")
-- ⬜ Signature trend chart: faint raw dots + trend line + confidence band + ideal curve + projection
-- ⬜ On/off-track status + recommendation surface
+## M1 — Weight engine (TS core) ✅
+- ✅ State-space (Kalman) trend estimator + RTS smoother: trend, slope, 95% band
+- ✅ Trailing-rate, projection-to-goal (ETA + range), non-linear ideal-loss curve
+- ✅ vitest parity suite vs Python golden values (8/8) — `prototypes/gen_golden.py`
 
-## M3 — Lift engine (core) ⬜
-- ⬜ e1RM estimation (formula choice + validity range; down-weight high-rep)
-- ⬜ Weekly hard sets per muscle (volume landmarks)
-- ⬜ RIR / proximity-to-failure tracking
-- ⬜ Strength trend via the shared estimator; tests
+## M2 — Weight app shell (web) ✅
+- ✅ Signature trend chart (SVG/d3): dots + trend + band + ideal + projection + goal/target lines + stat card
+- ✅ Intake form (profile, prefilled), quick daily weight+calorie logging
+- ✅ localStorage persistence, CSV import/export, synthetic-data generator
+- ⬜ (later) IndexedDB/Dexie migration if data volume grows
 
-## M4 — Lift app UI ⬜
+## M3 — Insights ✅
+- ✅ Rule-based, cited recommendations (Helms 2014, Garthe 2011, Morton 2018, Byrne 2018, Tipton 2015)
+- ✅ Recovery-aware (ACL): conservative-rate + protein cautions; rate/pace, goal-range, diet-break, protein, data-sufficiency rules
+- ✅ 6 rule tests
 
-## M5 — Adaptive TDEE + nutrition bridge ⬜
-- ⬜ Estimate maintenance from the intake↔weight-change relationship (MacroFactor-style)
-- ⬜ HealthKit nutrition read (MyFitnessPal / Cronometer write to Health → we read)
+## M4 — Calories + adaptive TDEE 🚧 (next)
+- ⬜ Cited spec: estimate maintenance from the intake↔weight-change relationship (MacroFactor-style)
+- ⬜ Adaptive-TDEE estimator + validation against synthetic ground truth
+- ⬜ Calorie/TDEE plot; tie to the weight read ("maintenance ~X, eating ~Y → predicted rate")
+- Note: calorie logging already captures data, so the estimator will have inputs on arrival
+
+## M5 — Lift engine + UI ⬜
+- ⬜ e1RM (formula choice + validity range), weekly hard sets per muscle (volume landmarks)
+- ⬜ RIR / proximity-to-failure, strength trend via the shared estimator; tests
+- ⬜ Lift charts
 
 ## Stretch
-- ⬜ AI coach (Claude API over the structured data + rule engine)
-- ⬜ CV body-composition / measurement aid (honest about ±accuracy)
-- ⬜ Android (would require revisiting the native-only stack decision)
+- ⬜ AI coach (Claude API over the structured data + rule engine) — intake interview, free-form Q&A
+- ⬜ Deploy (static host), PWA/offline polish
+- ⬜ Native iOS revisit only if web proves out
 
-## Pre-ship checklist (later)
-- ⬜ Apple Developer Program enrollment ($99/yr)
-- ⬜ App icon, screenshots, privacy nutrition labels, App Store listing
+## Housekeeping
+- ⬜ Resolve 5 high-severity npm advisories (transitive dev deps; `npm audit`)
+- ⬜ Silence 6 benign svelte-check warnings (intake form one-time prefill)

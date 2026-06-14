@@ -15,17 +15,25 @@ Tier-1 features:
 
 **Key insight:** both features are the same problem — *state estimation on a noisy biological time series*. One shared estimator (trend + rate + confidence interval + change detection) underpins both. Build and verify it once.
 
-Stack: native **SwiftUI** + **SwiftData/CloudKit** (local-first, iCloud sync). The algorithm core is a platform-agnostic Swift package (`Core/`, module `BodybuildingCore`), testable with `swift test` on the command-line toolchain — no Xcode required. The app shell needs Xcode.
+Stack (current): **client-side web app** — `web/`, Vite + Svelte 5 + TypeScript, local-first (browser storage), d3 charts. Pivoted from native iOS on 2026-06-14 to validate cheaply before any App Store / $99 commitment. The **living algorithm core is `web/src/lib/core/` (TS)**, verified to reproduce the Python prototype's golden values via vitest. The Swift `Core/` package (`BodybuildingCore`) and the Python `prototypes/` remain **reference oracles** (Swift testable via `CoreCheck`, no Xcode). Native iOS is revisited only if the web tool proves out.
 
 Milestones and status live in `ROADMAP.md` — read it at the start of a session and keep it current as work lands.
 
 ## Commands
 
 ```bash
-swift run --package-path Core CoreCheck   # verify the algorithm core (works today, no Xcode)
-swift build --package-path Core           # build the core package
-cd Core && swift test                     # full XCTest suite — ONCE Xcode is installed
-# App build/run requires Xcode (Mac App Store) + an iOS simulator — not yet installed.
+# Web app (current). Node is at ~/.local/node — ensure it's on PATH:
+export PATH="$HOME/.local/node/bin:$PATH"
+npm --prefix web install                  # once
+npm --prefix web run dev                  # local dev server
+npm --prefix web test                     # vitest (estimator parity + insight rules)
+npm --prefix web run check                # svelte-check + tsc type-check
+npm --prefix web run build                # static production bundle (web/dist)
+python3 prototypes/gen_golden.py          # regenerate TS estimator golden values
+
+# Reference oracles (Swift core, no Xcode needed):
+swift run --package-path Core CoreCheck   # verify the Swift algorithm core
+python3 prototypes/bw_trend_prototype.py  # Python estimator + Monte-Carlo validation
 ```
 
 Note: `XCTest` and Swift Testing ship only with Xcode, which isn't installed yet, so verification currently runs through the dependency-free `CoreCheck` harness (exits non-zero on failure). The XCTest target in `Core/Tests/` is dormant until Xcode lands.
