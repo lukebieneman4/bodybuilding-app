@@ -3,15 +3,20 @@
   import { analyzeWeight } from './lib/core/analysis';
   import { parseWeighInCsv, weighInsToCsv } from './lib/data/csv';
   import { generateSynthetic } from './lib/data/synthetic';
+  import { buildInsights } from './lib/insights/insights';
   import IntakeForm from './lib/components/IntakeForm.svelte';
   import QuickLog from './lib/components/QuickLog.svelte';
   import WeightChart from './lib/components/WeightChart.svelte';
+  import Insights from './lib/components/Insights.svelte';
 
   let editing = $state(false);
 
   const profile = $derived(store.profile);
   const analysis = $derived(
     profile && store.weighIns.length >= 2 ? analyzeWeight(store.weighIns, profile) : null
+  );
+  const insights = $derived(
+    analysis && profile ? buildInsights(analysis, profile, store.weighIns) : []
   );
 
   async function onImport(e: Event): Promise<void> {
@@ -75,6 +80,7 @@
         </div>
         <WeightChart {analysis} />
       </section>
+      <Insights {insights} />
     {:else}
       <section class="card empty">
         <h2>Add a few weigh-ins to see your trend</h2>
