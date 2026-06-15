@@ -1,5 +1,5 @@
 import { smooth, trailingRate, projectToGoal, idealCurve, type Mat2 } from './estimator';
-import { estimateTDEE, type TDEEResult } from './tdee';
+import { estimateTDEE, rollingTDEE, type TDEEResult, type TDEEPoint } from './tdee';
 import type { Profile, WeighIn, CalorieEntry } from '../data/types';
 import { fromKg, rateFromKg } from '../data/types';
 
@@ -43,14 +43,26 @@ export interface WeightAnalysis {
 
 const RATE_TOL_KG_WK = 0.12; // dead-band for "on track" vs fast/slow
 
+export interface IntakeAnalysis {
+  /** Current windowed maintenance estimate (most recent ~28 days). */
+  current: TDEEResult;
+  /** Rolling maintenance-over-time series for the chart. */
+  series: TDEEPoint[];
+  /** Daily intake scatter, in day offsets from the first weigh-in. */
+  intake: { day: number; kcal: number }[];
+  xDomain: [number, number];
+  yDomain: [number, number];
+}
+
 /**
  * Adaptive-TDEE read: estimate maintenance energy from the intake↔weight-change
  * relationship. Runs the shared trend filter on the weigh-ins and feeds its
  * de-noised slope to the energy-balance estimator (tdee.ts). Returns null when
  * there isn't enough paired data. Day offsets are taken from the first weigh-in
- * so weight and intake share one time origin.
+ * so weight and intake share one time origin. Bundles the current estimate plus
+ * the rolling series and intake scatter the calorie chart renders.
  */
-export function analyzeIntake(weighIns: WeighIn[], calories: CalorieEntry[]): TDEEResult | null {
+export function analyzeIntake(weighIns: WeighIn[], calories: CalorieEntry[]): IntakeAnalysis | null {
   if (weighIns.length < 2 || calories.length === 0) return null;
   const sortedW = [...weighIns].sort((a, b) => a.date.localeCompare(b.date));
   const first = sortedW[0].date;
@@ -60,7 +72,27 @@ export function analyzeIntake(weighIns: WeighIn[], calories: CalorieEntry[]): TD
   const cDays = sortedC.map((c) => dayDiff(first, c.date));
   const cKcal = sortedC.map((c) => c.kcal);
   const s = smooth(wDays, wObs);
-  return estimateTDEE(wDays, s.slope, s.slopeSd, cDays, cKcal);
+  const current = estimateTDEE(wDays, s.slope, s.slopeSd, cDays, cKcal);
+  if (!current) return null;
+  const series = rollingTDEE(wDays, s.slope, s.slopeSd, cDays, cKcal);
+  const intake = cDays.map((day, i) => ({ day, kcal: cKcal[i] }));
+
+  const lastDay = Math.max(wDays[wDays.length - 1], cDays[cDays.length - 1]);
+  const bandLos = series.map((p) => p.tdee - 1.96 * p.sd);
+  const bandHis = series.map((p) => p.tdee + 1.96 * p.sd);
+  const ys = [...cKcal, ...bandLos, ...bandHis, current.tdee];
+  const yMin = Math.min(...ys) - 80;
+  const yMax = Math.max(...ys) + 80;
+
+  return {
+    current,
+    series,
+    intake,
+    // include any intake logged before the first weigh-in (negative offset) so
+    // those dots aren't drawn in the left margin
+    xDomain: [Math.min(0, cDays[0]), lastDay],
+    yDomain: [yMin, yMax],
+  };
 }
 
 export function analyzeWeight(weighIns: WeighIn[], profile: Profile): WeightAnalysis | null {

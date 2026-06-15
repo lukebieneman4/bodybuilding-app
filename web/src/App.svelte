@@ -7,6 +7,7 @@
   import IntakeForm from './lib/components/IntakeForm.svelte';
   import QuickLog from './lib/components/QuickLog.svelte';
   import WeightChart from './lib/components/WeightChart.svelte';
+  import TDEEChart from './lib/components/TDEEChart.svelte';
   import Insights from './lib/components/Insights.svelte';
 
   let editing = $state(false);
@@ -15,12 +16,12 @@
   const analysis = $derived(
     profile && store.weighIns.length >= 2 ? analyzeWeight(store.weighIns, profile) : null
   );
-  const tdee = $derived(
+  const intake = $derived(
     profile && store.weighIns.length >= 2 ? analyzeIntake(store.weighIns, store.calories) : null
   );
   const insights = $derived(
     analysis && profile
-      ? buildInsights(analysis, profile, store.weighIns, store.calories, tdee)
+      ? buildInsights(analysis, profile, store.weighIns, store.calories, intake?.current ?? null)
       : []
   );
 
@@ -85,6 +86,15 @@
         </div>
         <WeightChart {analysis} />
       </section>
+      {#if intake}
+        <section class="card chartcard">
+          <div class="cardhead">
+            <h2>Calories &amp; maintenance</h2>
+            <span class="hint">maintenance estimated from your data · adapts over time</span>
+          </div>
+          <TDEEChart analysis={intake} />
+        </section>
+      {/if}
       <Insights {insights} />
     {:else}
       <section class="card empty">

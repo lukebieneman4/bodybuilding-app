@@ -32,7 +32,7 @@ the web tool proves itself in real use (a diet phase). See
 - ✅ Recovery-aware (ACL): conservative-rate + protein cautions; rate/pace, goal-range, diet-break, protein, data-sufficiency rules
 - ✅ 6 rule tests
 
-## M4 — Calories + adaptive TDEE 🚧
+## M4 — Calories + adaptive TDEE ✅
 - ✅ Cited spec + estimator: energy balance `TDEE = meanIntake − ρ·rate` (ρ≈7700
   kcal/kg, Wishnofsky 1958 / Hall 2008) over a trailing 28-day window, fed by the
   shared trend slope (not raw weight diffs) — `web/src/lib/core/tdee.ts`
@@ -42,7 +42,8 @@ the web tool proves itself in real use (a diet phase). See
   reviewed (band sd switched from filtered-endpoint to smoothed-slope after review)
 - ✅ Weight read tie-in: cited "maintenance ~X, eating ~Y → predicted rate"
   insight (`analyzeIntake` + maintenance insight)
-- ⬜ Dedicated Calorie/TDEE plot (intake scatter + adaptive-TDEE line over time)
+- ✅ Calorie/maintenance chart: intake scatter + rolling adaptive-TDEE line +
+  95% band + stat card (`TDEEChart.svelte`, `rollingTDEE`); rendered & inspected
 - Note: physics fix — synthetic intake now tracks the energy-driven base loss,
   not the water-contaminated latent weight (water carries no calories)
 

@@ -139,3 +139,75 @@ export function estimateTDEE(
     predictedRateKgPerWk: (atIntake: number) => ((atIntake - tdee) / rho) * 7,
   };
 }
+
+export interface TDEEPoint {
+  /** As-of day offset (the right edge of the trailing window). */
+  day: number;
+  /** Estimated maintenance at that day, kcal/day. */
+  tdee: number;
+  /** 1σ uncertainty at that day, kcal/day. */
+  sd: number;
+}
+
+/**
+ * Rolling adaptive-TDEE series for the chart: for each day `D` with a full
+ * trailing window behind it, the same energy-balance estimate over `(D −
+ * windowDays, D]`. This is the maintenance-over-time line — it shows the
+ * estimate adapting as the diet progresses. Like the weight trend, it uses the
+ * full-data smoothed slope (a retrospective view), only the trailing window
+ * moves. Cost is O(days × samples); fine for local-first single-user data.
+ */
+export function rollingTDEE(
+  weighDays: number[],
+  slope: number[],
+  slopeSd: number[],
+  calorieDays: number[],
+  calorieKcal: number[],
+  opts: TDEEOptions = {}
+): TDEEPoint[] {
+  const windowDays = opts.windowDays ?? 28;
+  const rho = opts.rho ?? KCAL_PER_KG_DEFAULT;
+  const minIntakeDays = opts.minIntakeDays ?? 7;
+  const out: TDEEPoint[] = [];
+  if (
+    weighDays.length < 2 ||
+    calorieDays.length === 0 ||
+    calorieKcal.length !== calorieDays.length ||
+    slopeSd.length !== weighDays.length
+  ) {
+    return out;
+  }
+  const lastDay = Math.max(weighDays[weighDays.length - 1], calorieDays[calorieDays.length - 1]);
+  for (let D = weighDays[0] + windowDays; D <= lastDay; D++) {
+    const cutoff = D - windowDays;
+    let rSum = 0;
+    let sdSum = 0;
+    let rN = 0;
+    for (let i = 0; i < weighDays.length; i++) {
+      if (weighDays[i] >= cutoff && weighDays[i] <= D) {
+        rSum += slope[i];
+        sdSum += slopeSd[i];
+        rN++;
+      }
+    }
+    if (rN === 0) continue;
+    let iSum = 0;
+    let iSumSq = 0;
+    let iN = 0;
+    for (let i = 0; i < calorieDays.length; i++) {
+      if (calorieDays[i] >= cutoff && calorieDays[i] <= D) {
+        iSum += calorieKcal[i];
+        iSumSq += calorieKcal[i] * calorieKcal[i];
+        iN++;
+      }
+    }
+    if (iN < minIntakeDays) continue;
+    const intakeMean = iSum / iN;
+    const intakeVar = iN > 1 ? (iSumSq - iN * intakeMean * intakeMean) / (iN - 1) : 0;
+    const rateSd = sdSum / rN;
+    const tdee = intakeMean - rho * (rSum / rN);
+    const sd = Math.sqrt(Math.max(intakeVar, 0) / iN + (rho * rateSd) ** 2);
+    out.push({ day: D, tdee, sd });
+  }
+  return out;
+}

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { smooth } from './estimator';
 import { dayDiff } from './analysis';
-import { estimateTDEE, KCAL_PER_KG_DEFAULT } from './tdee';
+import { estimateTDEE, rollingTDEE, KCAL_PER_KG_DEFAULT } from './tdee';
 import { generateSynthetic } from '../data/synthetic';
 
 /**
@@ -125,6 +125,40 @@ describe('adaptive TDEE estimator vs synthetic ground truth', () => {
     expect(r.predictedRateKgPerWk(r.tdee)).toBeCloseTo(0, 9);
     // a 550 kcal/day deficit ⇒ ≈ −0.5 kg/wk (550*7/7700)
     expect(r.predictedRateKgPerWk(r.tdee - 550)).toBeCloseTo((-550 / KCAL_PER_KG_DEFAULT) * 7, 9);
+  });
+
+  it('produces a rolling series that is increasing in day and recovers maintenance late', () => {
+    const { weighIns, calories } = generateSynthetic({
+      startKg: 90,
+      goalKg: 80,
+      days: 84,
+      ratePctPerWeek: 0.6,
+      maintenanceKcal: TRUE_MAINT,
+      startDate: '2026-01-01',
+      seed: 7,
+    });
+    const first = weighIns[0].date;
+    const wDays = weighIns.map((w) => dayDiff(first, w.date));
+    const wObs = weighIns.map((w) => w.weightKg);
+    const cDays = calories.map((c) => dayDiff(first, c.date));
+    const cKcal = calories.map((c) => c.kcal);
+    const s = smooth(wDays, wObs);
+    const series = rollingTDEE(wDays, s.slope, s.slopeSd, cDays, cKcal);
+    expect(series.length).toBeGreaterThan(20);
+    for (let i = 1; i < series.length; i++) expect(series[i].day).toBeGreaterThan(series[i - 1].day);
+    expect(series.every((p) => p.sd > 0)).toBe(true);
+    // the last rolling point matches the standalone current estimate (same window)
+    const cur = estimateTDEE(wDays, s.slope, s.slopeSd, cDays, cKcal)!;
+    expect(Math.abs(series[series.length - 1].tdee - cur.tdee)).toBeLessThan(30);
+    // late-phase points (bump well past) sit near true maintenance
+    const late = series.slice(-10);
+    const mean = late.reduce((a, p) => a + p.tdee, 0) / late.length;
+    expect(Math.abs(mean - TRUE_MAINT)).toBeLessThan(150);
+  });
+
+  it('returns an empty rolling series when the span is shorter than the window', () => {
+    const s = smooth([0, 5, 10], [90, 89.7, 89.4]);
+    expect(rollingTDEE([0, 5, 10], s.slope, s.slopeSd, [0, 5, 10], [2400, 2400, 2400])).toEqual([]);
   });
 
   it('returns null without enough intake data', () => {
