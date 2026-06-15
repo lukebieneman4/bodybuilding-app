@@ -97,6 +97,36 @@ describe('cited insights', () => {
     expect(td!.title.toLowerCase()).toContain('behind');
   });
 
+  it('surfaces a cited maintenance read when a TDEE estimate is available', () => {
+    const tdee = {
+      tdee: 2900,
+      sd: 60,
+      ci95: [2782, 3018] as [number, number],
+      intakeMean: 2400,
+      rateKgPerDay: -500 / 7700,
+      nIntake: 24,
+      windowDays: 28,
+      predictedRateKgPerWk: (at: number) => ((at - 2900) / 7700) * 7,
+    };
+    const list = buildInsights(
+      analysis(200, -0.5, 'on'),
+      profile(),
+      Array.from({ length: 20 }, (_, i) => ({ date: `2026-01-${i + 1}`, weightKg: 90 })),
+      [],
+      tdee
+    );
+    const m = list.find((x) => x.id === 'maintenance');
+    expect(m).toBeDefined();
+    expect(m!.title).toContain('2900');
+    expect(m!.detail).toContain('deficit');
+    expect(m!.cite.length).toBeGreaterThan(0);
+  });
+
+  it('omits the maintenance read with no TDEE estimate', () => {
+    const list = ids(profile(), analysis(200, -0.6, 'on'), 30);
+    expect(list.some((x) => x.id === 'maintenance')).toBe(false);
+  });
+
   it('every insight carries a citation', () => {
     const list = ids(profile({ notes: 'ACL' }), analysis(200, -1.2, 'fast'), 5);
     expect(list.length).toBeGreaterThan(0);

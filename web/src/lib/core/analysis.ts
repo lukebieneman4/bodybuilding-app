@@ -1,5 +1,6 @@
 import { smooth, trailingRate, projectToGoal, idealCurve, type Mat2 } from './estimator';
-import type { Profile, WeighIn } from '../data/types';
+import { estimateTDEE, type TDEEResult } from './tdee';
+import type { Profile, WeighIn, CalorieEntry } from '../data/types';
 import { fromKg, rateFromKg } from '../data/types';
 
 /** Days between two ISO dates (b - a). */
@@ -41,6 +42,26 @@ export interface WeightAnalysis {
 }
 
 const RATE_TOL_KG_WK = 0.12; // dead-band for "on track" vs fast/slow
+
+/**
+ * Adaptive-TDEE read: estimate maintenance energy from the intake↔weight-change
+ * relationship. Runs the shared trend filter on the weigh-ins and feeds its
+ * de-noised slope to the energy-balance estimator (tdee.ts). Returns null when
+ * there isn't enough paired data. Day offsets are taken from the first weigh-in
+ * so weight and intake share one time origin.
+ */
+export function analyzeIntake(weighIns: WeighIn[], calories: CalorieEntry[]): TDEEResult | null {
+  if (weighIns.length < 2 || calories.length === 0) return null;
+  const sortedW = [...weighIns].sort((a, b) => a.date.localeCompare(b.date));
+  const first = sortedW[0].date;
+  const wDays = sortedW.map((w) => dayDiff(first, w.date));
+  const wObs = sortedW.map((w) => w.weightKg);
+  const sortedC = [...calories].sort((a, b) => a.date.localeCompare(b.date));
+  const cDays = sortedC.map((c) => dayDiff(first, c.date));
+  const cKcal = sortedC.map((c) => c.kcal);
+  const s = smooth(wDays, wObs);
+  return estimateTDEE(wDays, s.slope, s.slopeSd, cDays, cKcal);
+}
 
 export function analyzeWeight(weighIns: WeighIn[], profile: Profile): WeightAnalysis | null {
   if (weighIns.length < 2) return null;

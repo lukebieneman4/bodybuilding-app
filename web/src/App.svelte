@@ -1,6 +1,6 @@
 <script lang="ts">
   import { store } from './lib/data/store.svelte';
-  import { analyzeWeight } from './lib/core/analysis';
+  import { analyzeWeight, analyzeIntake } from './lib/core/analysis';
   import { parseWeighInCsv, weighInsToCsv } from './lib/data/csv';
   import { generateSynthetic } from './lib/data/synthetic';
   import { buildInsights } from './lib/insights/insights';
@@ -15,8 +15,13 @@
   const analysis = $derived(
     profile && store.weighIns.length >= 2 ? analyzeWeight(store.weighIns, profile) : null
   );
+  const tdee = $derived(
+    profile && store.weighIns.length >= 2 ? analyzeIntake(store.weighIns, store.calories) : null
+  );
   const insights = $derived(
-    analysis && profile ? buildInsights(analysis, profile, store.weighIns, store.calories) : []
+    analysis && profile
+      ? buildInsights(analysis, profile, store.weighIns, store.calories, tdee)
+      : []
   );
 
   async function onImport(e: Event): Promise<void> {

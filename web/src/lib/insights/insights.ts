@@ -1,5 +1,7 @@
 import type { WeightAnalysis } from '../core/analysis';
+import type { TDEEResult } from '../core/tdee';
 import type { Profile, WeighIn, CalorieEntry } from '../data/types';
+import { rateFromKg } from '../data/types';
 
 /**
  * Rule-based, cited insights. Every recommendation traces to a reference — no
@@ -66,10 +68,12 @@ export function buildInsights(
   analysis: WeightAnalysis,
   profile: Profile,
   weighIns: WeighIn[],
-  calories: CalorieEntry[] = []
+  calories: CalorieEntry[] = [],
+  tdee: TDEEResult | null = null
 ): Insight[] {
   const out: Insight[] = [];
   const c = analysis.current;
+  const units = analysis.units;
   const currentKg = c.trendKg;
   const losing = c.ratePct < 0;
   const ratePctAbs = Math.abs(c.ratePct);
@@ -133,6 +137,36 @@ export function buildInsights(
       title: `On track (${c.ratePct >= 0 ? '+' : ''}${c.ratePct.toFixed(2)}%/wk)`,
       detail: 'Your trend matches the conservative pace you set. Hold course and keep logging.',
       cite: 'Garthe 2011',
+    });
+  }
+
+  // 2b) adaptive maintenance (TDEE) read — grounds the calorie numbers in the
+  // user's own data (estimated, not a formula) and states the forward prediction.
+  if (tdee) {
+    const round10 = (v: number) => Math.round(v / 10) * 10;
+    const maint = round10(tdee.tdee);
+    const band = round10(1.96 * tdee.sd);
+    const eating = round10(tdee.intakeMean);
+    const deficit = eating - maint; // < 0 = deficit
+    const predKgWk = tdee.predictedRateKgPerWk(tdee.intakeMean); // signed kg/wk
+    const predDisp = rateFromKg(predKgWk, units);
+    const predPct = (predKgWk * 100) / currentKg;
+    const balance =
+      deficit < 0
+        ? `a ${-deficit} kcal/day deficit`
+        : deficit > 0
+          ? `a ${deficit} kcal/day surplus`
+          : 'right at maintenance';
+    out.push({
+      id: 'maintenance',
+      severity: 'info',
+      title: `Estimated maintenance ~${maint} kcal/day (±${band})`,
+      detail:
+        `Backed out from your trend rate and logged intake — not a formula, so it adapts as you go. ` +
+        `You're eating ~${eating} kcal/day (${balance}), which predicts ` +
+        `~${predDisp >= 0 ? '+' : ''}${predDisp.toFixed(2)} ${units}/wk ` +
+        `(${predPct >= 0 ? '+' : ''}${predPct.toFixed(2)}%/wk).`,
+      cite: 'MacroFactor/MASS energy balance; Hall 2008',
     });
   }
 

@@ -32,11 +32,19 @@ the web tool proves itself in real use (a diet phase). See
 - ✅ Recovery-aware (ACL): conservative-rate + protein cautions; rate/pace, goal-range, diet-break, protein, data-sufficiency rules
 - ✅ 6 rule tests
 
-## M4 — Calories + adaptive TDEE 🚧 (next)
-- ⬜ Cited spec: estimate maintenance from the intake↔weight-change relationship (MacroFactor-style)
-- ⬜ Adaptive-TDEE estimator + validation against synthetic ground truth
-- ⬜ Calorie/TDEE plot; tie to the weight read ("maintenance ~X, eating ~Y → predicted rate")
-- Note: calorie logging already captures data, so the estimator will have inputs on arrival
+## M4 — Calories + adaptive TDEE 🚧
+- ✅ Cited spec + estimator: energy balance `TDEE = meanIntake − ρ·rate` (ρ≈7700
+  kcal/kg, Wishnofsky 1958 / Hall 2008) over a trailing 28-day window, fed by the
+  shared trend slope (not raw weight diffs) — `web/src/lib/core/tdee.ts`
+- ✅ Validation vs synthetic ground truth: clean-limit exact (<1 kcal), low-bias
+  Monte-Carlo (|bias|<75, MAE≈140≈5%), honest CI band, no-bump bias-isolation
+  test, forward-model self-consistency — 7 vitest tests; verification-engineer
+  reviewed (band sd switched from filtered-endpoint to smoothed-slope after review)
+- ✅ Weight read tie-in: cited "maintenance ~X, eating ~Y → predicted rate"
+  insight (`analyzeIntake` + maintenance insight)
+- ⬜ Dedicated Calorie/TDEE plot (intake scatter + adaptive-TDEE line over time)
+- Note: physics fix — synthetic intake now tracks the energy-driven base loss,
+  not the water-contaminated latent weight (water carries no calories)
 
 ## M5 — Lift engine + UI ⬜
 - ⬜ e1RM (formula choice + validity range), weekly hard sets per muscle (volume landmarks)

@@ -72,6 +72,8 @@ export interface SmoothResult {
   trendSd: number[];
   /** Smoothed slope at each sample, kg/day. */
   slope: number[];
+  /** 1σ uncertainty of the smoothed slope at each sample, kg/day. */
+  slopeSd: number[];
   /** Filtered (forward-only) level at the last sample, kg. */
   levelFilteredEnd: number;
   /** Filtered slope at the last sample, kg/day. */
@@ -155,6 +157,7 @@ export function smooth(days: number[], obs: number[], opts: SmoothOptions = {}):
     trend: xs.map((v) => v[0]),
     trendSd: Ps.map((p) => Math.sqrt(p[0][0])),
     slope: xs.map((v) => v[1]),
+    slopeSd: Ps.map((p) => Math.sqrt(p[1][1])),
     levelFilteredEnd: xf[n - 1][0],
     slopeFilteredEnd: xf[n - 1][1],
     PEnd: Pf[n - 1],

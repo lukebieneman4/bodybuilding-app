@@ -33,6 +33,8 @@ export interface SyntheticOptions {
   maintenanceKcal?: number;
   startDate?: string;
   seed?: number;
+  /** Peak of the mid-cut water-retention plateau, kg (0 disables it). */
+  bumpKg?: number;
 }
 
 export interface SyntheticData {
@@ -53,6 +55,7 @@ export function generateSynthetic(opts: SyntheticOptions = {}): SyntheticData {
   const ratePct = opts.ratePctPerWeek ?? 0.6;
   const maintenance = opts.maintenanceKcal ?? 2900;
   const startDate = opts.startDate ?? isoPlus(new Date().toISOString().slice(0, 10), -N + 1);
+  const bumpKg = opts.bumpKg ?? 0.9;
   const rng = mulberry32(opts.seed ?? 1);
 
   const asym = goalKg - 0.3;
@@ -63,21 +66,25 @@ export function generateSynthetic(opts: SyntheticOptions = {}): SyntheticData {
   const weighIns: WeighIn[] = [];
   const calories: CalorieEntry[] = [];
   let water = 0;
-  let prevLatent = startKg;
   for (let t = 0; t < N; t++) {
     const base = asym + (startKg - asym) * Math.exp(-k * t);
-    const bump = 0.9 * Math.exp(-((t - Math.floor(N * 0.4)) ** 2) / (2 * 9 * 9));
+    const bump = bumpKg * Math.exp(-((t - Math.floor(N * 0.4)) ** 2) / (2 * 9 * 9));
     const latent = base + bump;
     water = 0.6 * water + gaussian(rng) * 0.55;
     const obs = latent + water + gaussian(rng) * 0.4;
     const date = isoPlus(startDate, t);
     if (t === 0 || rng() < 0.75) weighIns.push({ date, weightKg: obs });
-    // intake = maintenance - deficit implied by that day's latent loss
-    const dailyLossKg = prevLatent - latent;
+    // Intake reflects ENERGY balance only. The deficit tracks the energy-driven
+    // fat-loss rate (analytic |d(base)/dt|), NOT the latent weight: the mid-cut
+    // water bump and AR(1) water are body-water/scale phenomena, not calories, so
+    // they must not leak into modeled intake (else an adaptive-TDEE estimator
+    // would learn to attribute water swings to energy). KCAL_PER_KG ≈ adipose
+    // energy density (Hall 2008). Estimator must recover maintenance from the
+    // de-noised trend rate, not raw weight diffs (MacroFactor-style).
+    const dailyLossKg = (startKg - asym) * k * Math.exp(-k * t); // kg/day, ≥0 for a cut
     const deficit = dailyLossKg * KCAL_PER_KG;
     const kcal = Math.round(maintenance - deficit + gaussian(rng) * 180);
     if (rng() < 0.85) calories.push({ date, kcal });
-    prevLatent = latent;
   }
   return { weighIns, calories };
 }
