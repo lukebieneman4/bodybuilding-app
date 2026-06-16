@@ -9,8 +9,26 @@
   import WeightChart from './lib/components/WeightChart.svelte';
   import TDEEChart from './lib/components/TDEEChart.svelte';
   import Insights from './lib/components/Insights.svelte';
+  import LiftSection from './lib/components/LiftSection.svelte';
+  import { parseWorkoutLog } from './lib/lift/parser';
+  import { assignCadenceDates } from './lib/lift/dates';
+  import { SAMPLE_LOG } from './lib/lift/sample';
 
   let editing = $state(false);
+  let view = $state<'body' | 'lifts'>('body');
+
+  // Demo hook: /?liftdemo seeds the bundled training log so the lift views can be
+  // viewed (and headlessly rendered) without manual paste. No-op without the flag.
+  $effect(() => {
+    if (typeof location === 'undefined' || !new URLSearchParams(location.search).has('liftdemo')) return;
+    if (!store.profile) {
+      store.setProfile({ heightCm: 183, units: 'lb', goalKg: 85, targetRatePctPerWeek: 0.5, createdAt: new Date().toISOString() });
+    }
+    if (store.liftSessions.length === 0) {
+      store.setLiftSessions(assignCadenceDates(parseWorkoutLog(SAMPLE_LOG).sessions, '2026-01-01'));
+    }
+    view = 'lifts';
+  });
 
   const profile = $derived(store.profile);
   const analysis = $derived(
@@ -76,6 +94,12 @@
     <IntakeForm initial={profile} />
     {#if editing}<button class="ghost center" onclick={() => (editing = false)}>Done</button>{/if}
   {:else}
+    <nav class="tabs">
+      <button class:active={view === 'body'} onclick={() => (view = 'body')}>Bodyweight</button>
+      <button class:active={view === 'lifts'} onclick={() => (view = 'lifts')}>Lifts</button>
+    </nav>
+
+    {#if view === 'body'}
     <QuickLog />
 
     {#if analysis}
@@ -118,6 +142,9 @@
         {store.weighIns.length} weigh-ins · {store.calories.length} calorie days logged
       </p>
     </section>
+    {:else}
+      <LiftSection />
+    {/if}
   {/if}
 
   <footer>Local-first · your data stays in this browser</footer>

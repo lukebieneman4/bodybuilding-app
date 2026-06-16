@@ -1,4 +1,5 @@
 import type { Profile, WeighIn, CalorieEntry } from './types';
+import type { LiftSession } from '../lift/types';
 
 /** Reactive, localStorage-backed app state (Svelte 5 runes). */
 
@@ -8,10 +9,11 @@ interface Persisted {
   profile: Profile | null;
   weighIns: WeighIn[];
   calories: CalorieEntry[];
+  liftSessions: LiftSession[];
 }
 
 function load(): Persisted {
-  const empty: Persisted = { profile: null, weighIns: [], calories: [] };
+  const empty: Persisted = { profile: null, weighIns: [], calories: [], liftSessions: [] };
   if (typeof localStorage === 'undefined') return empty;
   try {
     const raw = localStorage.getItem(KEY);
@@ -56,6 +58,17 @@ export const store = {
     upsertByDate(data.calories, c);
     persist();
   },
+  get liftSessions(): LiftSession[] {
+    return data.liftSessions;
+  },
+  setLiftSessions(sessions: LiftSession[]): void {
+    data.liftSessions = [...sessions].sort((a, b) => (a.date ?? '').localeCompare(b.date ?? ''));
+    persist();
+  },
+  clearLifts(): void {
+    data.liftSessions = [];
+    persist();
+  },
   importWeighIns(list: WeighIn[]): void {
     for (const w of list) upsertByDate(data.weighIns, w);
     persist();
@@ -74,6 +87,7 @@ export const store = {
     data.profile = null;
     data.weighIns = [];
     data.calories = [];
+    data.liftSessions = [];
     persist();
   },
 };

@@ -1,0 +1,503 @@
+2026 Post ACL Training
+FBEOD:
+Machine Chest Press 180 (2, 0)- 10.1, 10.0
+Pec Deck 300 (5, 1)- 8.0, 7.0
+Reverse Pec Deck 220- (5, 1)- 7.0, 6.0
+Wide Grip Pulldown 220- 8.0, 7.0
+Close Grip Pulldown 220- 7.0, 6.0
+Machine Kelso (5, 9) 220- 7.1, 8.0
+Machine Uni Lat Raise (5) 120- 8.0, 7.0, 6.0
+Uni Cable Tri Ext (4) 30- 7.0, 7.0
+Uni Cable Overhead Ext (12) 20- 10.0, 9.0
+Uni Machine Preacher Curl (5) 80- 6/ 60- 8
+Uni Hamstring Curl (2) 100- 9.1, 9.0
+Uni Leg Ext 200- 8.1, 8.0
+Uni Adductor 50/30- 6.0, 5.0
+Abductors 125- 6.0, 5.0
+Machine Calf Press 308- 7.1, 7.0
+FBEOD:
+Machine Chest Press (2, 0) 185- 11.1, 11.0
+Pec Deck (5, 1) 308- 9.0, 8.0
+Pec Deck Light (5, 1) 248- 12.0
+Reverse Pec Deck (5, 1) 228- 9.0, 8.0
+Wide Grip Pulldown 220- 10.1/ 240- 7.0
+Close Grip Pulldown 240- 7.0, 6.0
+Machine Kelso (5, 9) 220- 8.1, 8.0
+Machine Uni Lat Raise (5) 120- 9.1, 9.0, 8.0
+Uni Cable Tri Ext (4) 30- 8.1, 8.0
+Uni Cable Overhead Ext (12) 20- 11.0, 10.0
+Uni Machine Preacher Curl (5) 60- 10.1, 9.0
+Uni Hamstring Curl (2) 100- 9.1, 9.0
+Uni Leg Ext 200- 10.0, 8.0
+Uni Adductor 50/30- 10.0, 9.0
+Abductors 125- 9.0, 8.0
+Machine Calf Press 308- 9.0, 8.0
+FBEOD:
+Machine Chest Press (2, 0) 195- 12.1/ 205- 8.1
+Pec Deck (5, 1) 308- 9.f, 8.f
+Pec Deck Light (5, 1) 248- 12.0
+Reverse Pec Deck (5, 1) 228- 9.0, 8.0
+Wide Grip Pulldown 240- 7.0, 7.0
+Close Grip Pulldown 240- 8.0, 7.0
+Machine Kelso (5, 9) 220- 9.1, 9.0
+Machine Uni Lat Raise (5) 130- 10.1, 10.0, 9.0
+Uni Cable Tri Ext (4) 30- 9.1, 9.0
+Uni Cable Overhead Ext (12) 20- 11.0, 10.0
+Uni Machine Preacher Curl (5) 80- 7.1, 7.0
+Uni Hamstring Curl (2) 100- 10.1, 9.0
+Uni Leg Ext 200- 10.0, 9.0
+Uni Adductor 80 (2)- 15.1/ 125- 8.0
+Abductors 125- 9.0, 8.0
+Machine Calf Press 308- 9.0, 8.0
+FBEOD:
+Machine Chest Press (2, 0) 205- 10.0, 9.0
+Pec Deck (5, 1) 308- 9.f, 8.f
+Pec Deck Light (5, 1) 248- 12.0
+Reverse Pec Deck (5, 1) 228- 9.0, 8.0
+Wide Grip Pulldown 240- 8.1, 8.0
+Close Grip Pulldown 240- 8.0, 7.0
+Machine Kelso (5, 9) 220- 10.0, 9.0
+Machine Uni Lat Raise (5) 140- 10.0, 10.0, 8.f
+Uni Cable Tri Ext (4) 30- 11.0, 10.0
+Uni Cable Overhead Ext (12) 20- 11.0, 10.0
+Uni Machine Preacher Curl (5) 80- 8.0, 8.0
+Uni Hamstring Curl (2) 110- 8.0, 7.0
+Uni Leg Ext 210- 10.0, 9.0
+Uni Adductor (2) 125- 9.0, 8.0
+Abductors 125- 11.0, 10.0
+Machine Calf Press 308- 10.0, 9.0
+FBEOD:
+Machine Chest Press (2, 0) 205- 11.0, 10.0
+Pec Deck (5, 1) 308- 10.0, 9.0
+Pec Deck Light (5, 1) 248- 12.0
+Reverse Pec Deck (5, 1) 248- 7.0, 6.0
+Wide Grip Pulldown 240- 8.1, 8.0
+Close Grip Pulldown 240- 8.0, 7.0
+Machine Kelso (5, 9) 238- 8.0, 7.0
+Machine Uni Lat Raise (5) 150- 8.f, 8.0, 7.0
+Uni Cable Tri Ext (4) 33- 8.0, 7.0
+Uni Cable Overhead Ext (12) 23- 12.0, 11.0
+Uni Machine Preacher Curl (5) 80- 9.0, 8.0
+Uni Hamstring Curl (2) 110- 8.0, 7.0
+Uni Leg Ext 220- 8.0, 8.0
+Uni Adductor (2) 140- 9.0, 8.0
+Abductors 140- 11.0, 10.0
+Machine Calf Press 342- 9.0, 8.0
+FBEOD:
+Machine Chest Press (2, 0) 210- 10.0, 9.0
+Pec Deck (5, 1) 308- 10.0, 9.0
+Pec Deck Light (5, 1) 248- 12.0
+Reverse Pec Deck (5, 1) 248- 7.0, 6.0
+Wide Grip Pulldown 240- 8.1, 8.0
+Close Grip Pulldown 240- 8.0, 7.0
+Machine Kelso (5, 9) 238- 9.0, 8.0
+Machine Uni Lat Raise (5) 150- 9.0, 8.0, 7.0
+Uni Cable Tri Ext (4) 30- 10.1, 10.0
+Uni Cable Overhead Ext (12) 20- 13.1, 13.0
+Uni Machine Preacher Curl (5) 80- 9.0, 8.0
+Uni Hamstring Curl (2) 110- 8.0, 7.0
+Uni Leg Ext 220- 9.0, 8.0
+Adductor (2) 155- 9.0, 8.0
+Abductors 155- 9.0, 8.0
+Machine Calf Press 342- 9.0, 8.0
+FBEOD:
+Machine Chest Press (2, 0) 210- 10.0, 9.f
+Pec Deck (5, 1) 308- 11.0, 9.f
+Pec Deck Light (5, 1) 248- 12.0
+Reverse Pec Deck (5, 1) 248- 7.0, 6.0
+Wide Grip Pulldown 240- 7.0, 6.0
+Close Grip Pulldown 240- 7.0, 6.0
+Machine Kelso (5, 9) 238- 9.0, 8.0
+Machine Uni Lat Raise (5) 150- 9.1, 9.0, 8.0
+Uni Cable Tri Ext (4) 30- 11.0, 10.0
+Uni Cable Overhead Ext (12) 25- 10.0, 9.0
+Uni Machine Preacher Curl (5) 80- 9.1, 9.0
+Uni Hamstring Curl (2) 110- 9.0, 8.0
+Uni Leg Ext 220- 9.0, 8.0
+Adductor (2) 155- 9.0, 8.0
+Abductors 155- 9.0, 8.0
+Machine Calf Press 342- 10.0, 9.0
+FBEOD:
+Machine Chest Press (2, 0) 210- 10.0, 9.f
+Pec Deck (5, 1) 308- 11.0, 9.f
+Pec Deck Light (5, 1) 248- 12.0
+Reverse Pec Deck (5, 1) 248- 7.0, 6.0
+Wide Grip Pulldown 240- 7.0, 6.0
+Close Grip Pulldown 240- 7.0, 6.0
+Machine Kelso (5, 9) 238- 9.0, 8.0
+Machine Uni Lat Raise (5) 150- 9.1, 9.0, 8.0
+Uni Cable Tri Ext (4) 30- 11.0, 10.0
+Uni Cable Overhead Ext (12) 25- 10.0, 9.0
+Uni Machine Preacher Curl (5) 80- 9.1, 9.0
+Uni Hamstring Curl (2) 110- 9.0, 8.0
+Uni Leg Ext 220- 9.0, 8.0
+Adductor (2) 155- 9.0, 8.0
+Abductors 155- 9.0, 8.0
+Machine Calf Press 342- 10.0, 9.0
+FBEOD:
+Machine Chest Press (2, 0) 210- 11.0, 10.0
+Pec Deck (5, 1) 308- 11.0, 10.0
+Pec Deck Light (5, 1) 248- 13.0
+Reverse Pec Deck (5, 1) 248- 7.0, 6.0, 5.0
+Wide Grip Pulldown 240- 7.0, 6.0
+Close Grip Pulldown 240- 8.0, 7.0
+Machine Kelso (5, 9) 238- 9.0, 8.0
+Machine Uni Lat Raise (5) 160- 8.0, 7.f, 7.0
+Uni Cable Tri Ext (4) 35- 6.0, 5.0
+Uni Cable Overhead Ext (12) 25- 11.1, 11.0
+Uni Machine Preacher Curl (5) 80- 10.0, 9.0
+Uni Hamstring Curl (2) 110- 9.1, 9.0
+Uni Leg Ext 220- 9.1, 9.0
+Adductor (2) 155- 10.0, 9.0
+Abductors 155- 11.0, 10.0
+Machine Calf Press 376/70- 10.0/13.0, 9.0/13.0
+FBEOD:
+Machine Chest Press (2, 0) 220- 10.0, 8.0
+Pec Deck (5, 1) 308- 11.0, 10.0
+Pec Deck Light (5, 1) 248- 13.0
+Reverse Pec Deck (5, 1) 248- 7.0, 6.0, 5.0
+Wide Grip Pulldown 240- 7.0, 6.0
+Close Grip Pulldown 240- 8.0, 7.0
+Machine Kelso (5, 9) 248- 8.0, 7.0
+Machine Uni Lat Raise (5) 160- 9.0, 8.0, 7.0
+Uni Cable Tri Ext (4) 35- 6.0, 5.0
+Uni Cable Overhead Ext (12) 25- 11.1, 11.0
+Uni Machine Preacher Curl (5) 90- 7.0, 6.0
+Uni Hamstring Curl (2) 110- 10.0, 9.0
+Uni Leg Ext 220- 10.0, 9.0
+Adductor (2) 155- 10.0, 9.0
+Abductors 155- 12.0, 11.0
+Machine Calf Press 376/70- 10.0/20.2/ 376/104- 9.0/13.0
+Posterior:
+Uni Reverse Pec Deck (5, 1) 148- 6.f
+Reverse Pec Deck (5, 1) 248- 6.0, 5.0
+Cuffed Cable Rear Delt Fly (6) 35- 7.f, 7.0
+Cuffed Uni Tricep Ext (4) 50- 6.0, 5.0
+Cuffed Uni Overhead Tricep Ext (12) 35- 8.1, 8.0
+Straight Bar Tricep Ext (4) 80- 13.f
+Uni Side Flap 140- 6.0
+Uni Front Flap 140- 8.1
+Straight Bar Pulldown 240- 7.0, 6.0
+Close Grip Pulldown 240- 8.0
+Machine Lat Row (3, 9) 208- 12.1
+Machine Kelso Shrug (5, 9) 248- 9.0, 8.0
+Tbar Wide Grip Row 135- 5.0, 4.0q
+Uni Seated Ham Curl (2) 110- 10.0, 9.0
+Uni Lying Ham Curl (5, 2) 120-6.0, 5.0
+Uni 45 Ext 45- 8.1
+Uni Cable Kickback (21) 32.5/17.5- 8.1/11.2, 8.0/11.1
+Anterior:
+Uni Machine Side Delt (5) 160- 10.0
+Machine Side Delt (5) 140- 7.f
+Back Cuffed Cable Side Delt (14) 30- 9.1, 9.0
+Uni Pec Deck (5, 4, 2) 308- 12.1
+Pec Deck (5, 1) 308- 10.0, 9.0
+Machine Press (2) 200- 8.0, 7.0
+Uni Leg Press 225- 12.2, 12.1
+Uni Leg Ext 220- 9.0, 8.0
+Uni Calf Press (7) 410/138- 7.0/11.1, 6.0/11.0, 6.0/11.0
+Adductors (2) 170- 9.0, 8.0, 7.0
+Abductors 170- 10.0, 9.0
+DB Preacher Curl (5) 70- 7.0, 6.0
+Recline Curl (45) 50- 8.0
+DB Lateral Raise (90) 30- 6.0
+DB Front Raise (60) 30- 5.f
+Posterior:
+Uni Reverse Pec Deck (5, 1) 148- 6.f
+Reverse Pec Deck (5, 1) 248- 6.0, 5.0
+Cuffed Cable Rear Delt Fly (6) 35- 7.f, 7.0
+Cuffed Uni Tricep Ext (4) 50- 7.0, 6.0
+Cuffed Uni Overhead Tricep Ext (12) 35- 9.0, 8.0
+Shrugged Straight Bar Tricep Ext (4) 80- 11.f
+Uni Side Flap 140- 6.0
+Uni Front Flap 140- 8.f
+Straight Bar Pulldown 240- 7.0, 6.0
+Close Grip Pulldown 240- 8.0
+Machine Lat Row (3, 9) 208- 12.1
+Machine Kelso Shrug (5, 9) 248- 9.0, 8.0
+Tbar Wide Grip Row 135- 5.0, 4.0
+Uni Seated Ham Curl (2) 110- 10.0, 9.0i
+Uni Lying Ham Curl (5, 2) 120-6.0, 5.0
+Uni 45 Ext 80- 8.1
+Uni Cable Kickback (21) 32.5/17.5- 8.1/11.2, 8.0/11.1
+Anterior:
+Uni Machine Side Delt (5) 160- 10.0
+Machine Side Delt (5) 140- 7.f
+Back Cuffed Cable Side Delt (14) 30- 9.1, 9.0
+Uni Pec Deck (5, 4, 2) 308- 12.1
+Pec Deck (5, 1) 308- 10.f, 9.0
+Machine Press (2) 200- 8.0, 7.0
+Uni Leg Press 260/0- 12.2/15.5, 12.1/15.2
+Uni Leg Ext 220- 9.0, 8.0
+Uni Calf Press (7) 410/172- 8.0/8.1, 7.0/8.0, 6.0/8.0
+Adductors (2) 170- 9.0, 8.0, 7.0
+Abductors 170- 10.0, 9.0
+DB Preacher Curl (5) 70- 8.0, 7.0
+Recline Curl (45) 50- 10.0
+DB Lateral Raise (90) 30- 6.0
+DB Front Raise (60) 30- 5.f
+Priorities:
+Uni Reverse Pec Deck (5, 1) 148- 7.f
+Reverse Pec Deck (5, 1) 248- 7.0, 6.0
+Uni Machine Side Delt (5) 160- 10.0
+Machine Side Delt (5) 140- 7.f
+Cuffed Cable Rear Delt Fly (6) 35- 8.0, 7.0
+Back Cuffed Cable Side Delt (14) 30- 10.0, 9.0
+Uni Side Flap 140- 6.0
+Uni Front Flap 140- 10.1
+Straight Bar Pulldown 240- 7.0, 6.0
+Close Grip Pulldown 240- 8.0
+Machine Lat Row (3, 9) 208- 12.1
+Uni Pec Deck (5, 4, 2) 308- 12.1
+Pec Deck (5, 1) 308- 10.f, 9.0
+Machine Press (2) 200- 8.0, 7.0
+Cuffed Uni Tricep Ext (4) 50- 7.0, 6.0
+Cuffed Uni Overhead Tricep Ext (12) 35- 9.0, 8.0
+Shrugged Straight Bar Tricep Ext (4) 80- 11.f
+Posterior:
+Uni Reverse Pec Deck (5, 3) 148- 8.0
+Reverse Pec Deck (5, 1) 248- 6.1, 6.0
+Cuffed Cable Rear Delt Fly (6) 35- 8.0, 7.0
+Cuffed Uni Tricep Ext (4) 50- 8.0, 7.0
+Cuffed Uni Overhead Tricep Ext (12) 35- 9.0, 8.0q
+Shrugged Straight Bar Tricep Ext (4) 80- 12..0
+Uni Side Flap 140- 8.0
+Uni Front Flap 140- 9.0
+Straight Bar Pulldown 240- 8.0, 7.0
+Close Grip Pulldown 240- 8.0
+Machine Lat Row (3, 9) 208- 14.0
+Machine Kelso Shrug (5, 9) 248- 9.0, 8.0
+Tbar Wide Grip Row 135- 6.0, 5.0
+Uni Seated Ham Curl (2) 110/9- 11.0/11.?, 10.0/11.?a
+Uni Lying Ham Curl (5, 2) 120- 7.0, 6.0
+Uni 45 Ext (3) 80/0- 9.0/7.0
+Uni Cable Kickback (21) 32.5/17.5- 9.0/11.0, 8.0/10.0
+Anterior:
+Uni Machine Side Delt (5) 170- 8.0
+Machine Side Delt (5) 140- 8.0
+Back Cuffed Cable Side Delt (14) 30- 9.1, 9.0
+Uni Pec Deck (5, 4, 2) 308- 13.0
+Pec Deck (5, 1) 308- 10.f, 9.0
+Machine Press (2) 200- 8.0, 7.0
+Uni Leg Press 270/70- 12.2/14.2, 12.1/14.1
+Uni Leg Ext 220- 9.0, 8.0
+Uni Calf Press (7) 410/206- 8.0/8.1, 7.0/8.0, 6.0/8.0
+Adductors (2) 170- 9.0, 8.0, 7.0
+Abductors 170- 10.0, 9.0
+DB Preacher Curl (5) 70- 9.0, 8.0
+Recline Curl (45) 50- 12.0
+DB Lateral Raise (90) 30- 7.0
+DB Front Raise (60) 30- 6.0
+Priorities:
+Uni Reverse Pec Deck (5, 3) 148- 8.0
+Reverse Pec Deck (5, 1) 248- 8.0, 7.0
+Uni Machine Side Delt (5) 170- 8.0
+Machine Side Delt (5) 140- 8.0
+Cuffed Cable Rear Delt Fly (6) 35- 8.0, 7.0
+Back Cuffed Cable Side Delt (14) 30- 10.0, 9.0
+Uni Side Flap 140- 6.0
+Uni Front Flap 140- 11.0
+Straight Bar Pulldown 240- 7.0, 6.0
+Close Grip Pulldown 240- 8.0
+Machine Lat Row (3, 9) 208- 13.0
+Uni Pec Deck (5, 4, 2) 308- 13.0
+Pec Deck (5, 1) 308- 10.f, 9.0
+Machine Press (2) 200- 8.0, 7.0
+Cuffed Uni Tricep Ext (4) 50- 7.0, 6.0
+Cuffed Uni Overhead Tricep Ext (12) 35- 9.0, 8.0 RT
+Shrugged Straight Bar Tricep Ext (4) 80- 11.f
+Posterior Ash:
+Uni Reverse Pec Deck (5, 3) 148- 9.0
+Reverse Pec Deck (5, 1) 248- 6.1, 6.0
+Cuffed Cable Rear Delt Fly (16) 35- 8.0, 7.0
+Cuffed Uni Tricep Ext (18) 50- 5.1, 5.0
+Cuffed Uni Overhead Tricep Ext (12) 35- 6.1, 6.0
+Shrugged Straight Bar Tricep Ext (18) 80- 12.0
+Uni Side Flap 145- 6.0
+Uni Front Flap 145- 7.0
+Straight Bar Pulldown 235- 7.1, 7.0
+Close Grip Pulldown 235- 8.0
+Machine Lat Row (3, 9) 218- 14.0
+Machine Kelso Shrug (5, 9) 248- 9.0, 8.0
+Tbar Wide Grip Row 90- 6.0, 5.0
+Uni Seated Ham Curl (2) 110/20- 11.0/9.0, 10.0/8.0
+Uni Lying Ham Curl (5, 2) 120/20- 7.0/6.0, 6.0/4.0
+Uni 45 Ext (3) 80/0- 9.0/7.0
+Uni Cable Kickback (3) 35/20- 9.0/11.0, 8.0/10.0
+Anterior Ash:
+Uni Machine Side Delt (5) 170- 8.0
+Machine Side Delt (5) 140- 8.0
+Back Cuffed Cable Side Delt (8) 30- 9.1
+Uni Pec Deck (5, 4, 2) 308- 13.0
+Pec Deck (5, 1) 308- 11.0
+Machine Press (2) 200- 8.0
+Uni Leg Press 180/0- 8.1/8.1, 8.0/8.0
+Uni Leg Ext 220/80- 9.0/9.0, 8.0/8.0
+Uni Calf Press (4) 140/40- 8.0/7.0, 7.0/7.0
+Adductors (7) 100- 8.0, 8.0
+Abductors 100- 7.0, 7.0
+DB Preacher Curl (1) 75- 7.0, 6.0
+Recline Curl (45) 50- 12.0
+DB Front Raise (60) 30- 6.0
+Posterior Ash:
+Uni Reverse Pec Deck (5, 3) 148- 9.0
+Reverse Pec Deck (5, 1) 248- 7.0
+Cuffed Cable Rear Delt Fly (15) 35- 8.0
+Cuffed Uni Tricep Ext (18) 50- 6.f
+Cuffed Uni Overhead Tricep Ext (12) 35- 10.0
+Shrugged Straight Bar Tricep Ext (18) 80- 12.0
+Straight Bar Pulldown 235- 7.0
+Close Grip Pulldown 235- 8.0
+Machine Lat Row (3, 9) 218- 13.0, 12.0
+Machine Kelso Shrug (5, 9) 248- 9.0
+Tbar Wide Grip Row 90- 6.0, 5.0
+Uni Seated Ham Curl (2) 110/9- 11.0/0.0, 10.0/0.0
+Uni Lying Ham Curl (5, 2) 120- 7.0
+Uni Machine 45 Ext (4, 4) 90/0- 6.0/0.0
+Uni Machine cable Kickback 60/0- 10.0/0
+Anterior Ash:
+Uni Machine Side Delt (5) 170- 8.0
+Machine Side Delt (5) 140- 8.0
+Back Cuffed Cable Side Delt (8) 30- 9.1
+Uni Pec Deck (5, 4, 2) 308- 13.0
+Pec Deck (5, 1) 308- 11.0
+Plate Machine Press (4) 90- 8.0
+Uni Leg Press 180/0- 8.1/0.0, 8.0/0.0
+Uni Leg Ext 220/80- 9.1/0.0, 9.0/0.0
+Uni Calf Press (4) 140/40- 9.0/0.0, 8.0/0.0
+Adductors (7) 100- 12.1, 12.0
+Abductors 100- 7.0, 7.0
+DB Preacher Curl (1) 75- 7.0, 6.0
+Recline Curl (45) 50- 12.0
+DB Front Raise (60) 30- 6.0
+Posterior Ash:
+Uni Reverse Pec Deck (5, 3) 148- 10.0
+Reverse Pec Deck (5, 1) 248- 7.0
+Cuffed Cable Rear Delt Fly (15) 35- 8.0
+Cuffed Uni Tricep Ext (18) 50- 5.f
+Cuffed Uni Overhead Tricep Ext (12) 35- 10.0
+Shrugged Straight Bar Tricep Ext (18) 80- 12.0
+Straight Bar Pulldown 235- 7.0
+Close Grip Pulldown 235- 8.0
+Machine Lat Row (3, 9) 218- 13.0, 12.0
+Machine Kelso Shrug (5, 9) 248- 9.0
+Tbar Wide Grip Row 90- 8.0, 7.0
+Uni Seated Ham Curl (2) 110/9- 11.0/0.0, 10.0/0.0
+Uni Lying Ham Curl (5, 2) 120- 7.0
+Uni Machine 45 Ext (4, 4) 90/0- 8.0/0.0
+Uni Machine cable Kickback 80/0- 10.0/0
+Ab Machine (2) 228- 6.0
+Anterior Ash:
+Uni Machine Side Delt (5) 170- 9.0
+Machine Side Delt (5) 140- 8.f
+Back Cuffed Cable Side Delt (8) 30- 9.1
+Uni Pec Deck (5, 4, 2) 308- 15.0
+Pec Deck (5, 1) 308- 11.0
+Plate Machine Press (4) 100- 8.f
+Uni Leg Press 90/0- 9.1/0.0, 9.0/0.0
+Uni Leg Ext 220/80- 9.1/0.0, 9.0/0.0
+Uni Calf Press (4) 140/40- 9.0/0.0, 8.0/0.0
+Adductors (7) 110- 10.1, 10.0
+Abductors 110- 7.f, 7.0
+DB Preacher Curl (1) 75- 7.0, 6.0
+Recline Curl (45) 50- 12.f
+DB Front Raise (60) 30- 7.0
+Posterior Ash:
+Uni Reverse Pec Deck (5, 3) 148- 10.0
+Reverse Pec Deck (5, 1) 248- 7.0
+Cuffed Cable Rear Delt Fly (15) 35- 8.0
+Cuffed Uni Tricep Ext (18) 50- 6.0
+Cuffed Uni Overhead Tricep Ext (12) 35- 10.0
+Shrugged Straight Bar Tricep Ext (18) 80- 12.0, 11.0
+Straight Bar Pulldown 235- 7.0, 6.0
+Close Grip Pulldown 235- 8.0
+Machine Lat Row (3, 9) 218- 14.0, 13.0
+Machine Kelso Shrug (5, 9) 248- 9.0
+Tbar Wide Grip Row 100- 8.0, 7.0
+Uni Seated Ham Curl (2) 110/9- 11.0/0.0, 10.0/0.0
+Uni Lying Ham Curl (5, 2) 120- 7.0
+Uni Machine 45 Ext (4, 4) 90/0- 8.0/0.0
+Uni Machine cable Kickback 80/0- 10.0/0
+Ab Machine (3) 228- 6.0
+Anterior Ash:
+Uni Machine Side Delt (5) 170- 9.0
+Machine Side Delt (5) 140- 8.f
+Back Cuffed Cable Side Delt (8) 30- 9.1
+Uni Pec Deck (5, 4, 2) 308- 15.0
+Pec Deck (5, 1) 308- 11.0
+Plate Machine Press (4) 100- 8.f
+Uni Leg Press 90/0- 10.1/0.0, 10.0/0.0
+Uni Leg Ext 220/80- 10.1/0.0, 9.0/0.0
+Uni Calf Press (4) 150/40- 8.f/0.0, 8.0/0.0
+Adductors (7) 110- 12.1, 12.0
+Abductors 110- 7.f, 7.0
+DB Preacher Curl (1) 75- 7.0, 6.0
+Recline Curl (45) 50- 12.f
+DB Front Raise (60) 30- 7.0
+Posterior Ash:
+Uni Reverse Pec Deck (5, 3) 148- 10.0
+Reverse Pec Deck (5, 1) 248- 7.0
+Cuffed Cable Rear Delt Fly (15) 35- 8.0
+Cuffed Uni Tricep Ext (18) 50- 6.0
+Cuffed Uni Overhead Tricep Ext (12) 35- 10.0
+Shrugged Straight Bar Tricep Ext (18) 85- 12.1, 12.0
+Straight Bar Pulldown 235- 8.0, 7.0
+Close Grip Pulldown 235- 8.0
+Machine Lat Row (3, 9) 228- 13.0, 12.0
+Machine Kelso Shrug (5, 9) 248- 9.0
+Tbar Wide Grip Row 100- 8.0, 7.0
+Uni Seated Ham Curl (2) 110/9- 11.0/0.0, 10.0/0.0
+Uni Lying Ham Curl (5, 2) 120- 7.0
+Uni Machine 45 Ext (4, 4) 90/0- 8.0/0.0
+Uni Machine cable Kickback 80/0- 10.0/0
+Ab Machine (3) 228- 7.0
+Anterior Ash:
+Uni Machine Side Delt (5) 170- 9.0
+Machine Side Delt (5) 140- 8.f
+Back Cuffed Cable Side Delt (8) 30- 9.1
+Uni Pec Deck (5, 4, 2) 308- 16.0
+Pec Deck (5, 1) 308- 11.0
+Plate Machine Press (4) 100- 8.f
+Uni Leg Press 100/0- 10.0/0.0, 9.0/0.0
+Uni Leg Ext 220/80- 10.0/0.0, 9.0/0.0
+Uni Calf Press (4) 150/40- 8.f/0.0, 8.0/0.0
+Adductors (7) 110- 14.1, 14.0
+Abductors 110- 7.f, 7.0
+DB Preacher Curl (1) 75- 7.1, 7.0
+Recline Curl (45) 50- 12.f
+DB Front Raise (60) 30- 7.0
+Posterior Brick:
+Uni Reverse Pec Deck (5, 3) 168- 10.0
+Reverse Pec Deck (5, 1) 248- 7.0
+Cuffed Cable Rear Delt Fly (6) 35- 8.0
+Cuffed Uni Tricep Ext (4) 50- 6.1
+Cuffed Uni Overhead Tricep Ext (12) 35- 10.0
+Shrugged Straight Bar Tricep Ext (4) 85- 12.1, 12.0
+Straight Bar Pulldown 235- 8.0, 7.0
+Close Grip Pulldown 235- 8.0
+Machine Lat Row (3, 9) 228- 13.0, 12.0
+Machine Kelso Shrug (5, 9) 248- 10.0
+Tbar Wide Grip Row 135- 8.0, 7.0
+Uni Seated Ham Curl (2) 110/9- 11.0/0.0, 10.0/0.0
+Uni Lying Ham Curl (5, 2) 120- 7.0
+Uni 45 Ext (4, 4) 100/0- 7.0/8.0
+Uni Machine Cable Kickback 35- 8.0/5.0
+Ab Machine (11) 100- 8.0
+Anterior Brick:
+Uni Machine Side Delt (5) 170- 10.0
+Machine Side Delt (5) 140- 8.f
+Back Cuffed Cable Side Delt (14) 30- 9.1
+Uni Pec Deck (5, 4, 2) +25- 10.0
+Pec Deck (5, 1) 308- 11.0
+Machine Press (2) 200- 10.f
+Uni Leg Press 225/90- 12.2/10.1, 12.0/10 .0
+Uni Leg Ext 220/80- 10.0/0.0, 9.0/0.0
+Uni Calf Press (6) 376/308- 8.f/6.0, 8.0/6.0
+Adductors 190- 10.1, 10.0
+Abductors 190- 9.0, 8.0
+DB Preacher Curl (1) 75- 7.1, 7.0
+Recline Curl (45) 50- 12.f
+DB Front Raise (60) 30- 7.0
+Descriptive and analytic MBSE
+MBSE, imbse, ai
+MBSE: sysml vs uaf, sysml then sysml and uaf

@@ -47,10 +47,36 @@ the web tool proves itself in real use (a diet phase). See
 - Note: physics fix — synthetic intake now tracks the energy-driven base loss,
   not the water-contaminated latent weight (water carries no calories)
 
-## M5 — Lift engine + UI ⬜
-- ⬜ e1RM (formula choice + validity range), weekly hard sets per muscle (volume landmarks)
-- ⬜ RIR / proximity-to-failure, strength trend via the shared estimator; tests
-- ⬜ Lift charts
+## M5 — Lift engine + UI ✅
+- ✅ Cited science spec (`web/src/lib/lift/SCIENCE.md`): Epley e1RM + validity tiers,
+  RIR→reps-to-failure (`.f`=RIR0), hard-set RIR≤3, per-muscle MV/MEV/MAV/MRV
+  landmarks, muscle attribution (primary 1.0 / secondary 0.5), ACL LSI layer —
+  hypertrophy-scientist, anchored to primary literature
+- ✅ Tolerant log parser + data model (`web/src/lib/lift/`): handles the user's real
+  Notes format — floating `()` setup, overloaded `/` (L/R limb vs back-off block),
+  `+N` over-stack load, `.f` failure, bare reps, surgical-side zeros, multi-gym
+  titles; 12 golden tests vs the real `2026 Post ACL Training` log (parser.test.ts)
+- ✅ Analysis core (`web/src/lib/lift/`): Epley e1RM + validity tiers (`e1rm.ts`);
+  muscle attribution + MV/MEV/MAV/MRV landmarks (`muscles.ts`); strength trend per
+  exercise×location×limb via the shared Kalman, weekly hard-sets-per-muscle vs
+  landmarks, L/R asymmetry/LSI (`analysis.ts`) — 31 tests vs spec values (58 total green)
+- ✅ Paste-and-confirm import UI (`LiftImport.svelte`): live preview (sessions/exercises/
+  flagged/skipped), per-location identity, "Load my training log" one-click sample
+- ✅ Session-cadence dating (`dates.ts`): FBEOD=+2d; Ant/Post & Upper/Lower 2-on-1-off
+- ✅ Lift charts: strength trend (e1RM + band, exercise picker), weekly volume-per-muscle
+  vs landmark zones, L/R symmetry/LSI (`StrengthChart`/`VolumeChart`/`SymmetryChart` +
+  `LiftSection`); Body/Lifts tabs in `App.svelte`; rendered & inspected (headless)
+- ✅ End-to-end validation on the real `2026 Post ACL Training` log (PDFKit-extracted,
+  one-per-line): 30 sessions / 469 lifts parse, sane strength/volume/LSI output;
+  fixed a decimal-load parser bug (`32.5/17.5`) found on real data; real-log smoke test
+- ✅ Athlete-refined muscle attribution (lats/traps split, lat-vs-wide row, pec-deck no
+  front-delt, 45° glute/ham, leg press no hams); auditable volume breakdown (click a bar)
+- ✅ Strength summary chart (`StrengthSummaryChart`): each lift's e1RM indexed to its own
+  baseline (=100%), lines coloured by muscle, by-muscle/by-exercise toggle; mixed
+  relative/absolute-load series excluded as not self-comparable; math verified (80 tests)
+- ⬜ Polish (nice-to-have): RIR/failure-frequency chart; reconcile mixed +N/pin loads into
+  one comparable series (currently excluded from the summary); fuzzy exercise-name merging;
+  label FBEOD sessions' gym; surgical side from profile (defaults R)
 
 ## Stretch
 - ⬜ AI coach (Claude API over the structured data + rule engine) — intake interview, free-form Q&A

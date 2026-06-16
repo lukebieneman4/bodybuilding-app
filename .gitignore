@@ -31,3 +31,9 @@ web/.vite/
 .vite/
 *.log
 npm-debug.log*
+
+# Reference extractions kept out of the repo:
+#  - copyrighted full-text review (SCIENCE.md captures the cited points instead)
+#  - superseded run-on log extraction (the PDFKit-lined version is the source)
+prototypes/acl_recovery_review.txt
+prototypes/acl_training_log.txt
