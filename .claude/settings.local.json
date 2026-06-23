@@ -49,7 +49,7 @@
       "Bash(pod *)",
       "Bash(gem install *)"
     ],
-    "defaultMode": "dontAsk",
+    "defaultMode": "bypassPermissions",
     "additionalDirectories": [
       "/tmp"
     ]
@@ -61,9 +61,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 /Users/lukasbieneman/BodybuildingApp/.claude/hooks/check_rm_scope.py",
+            "command": "python3 /Users/lukasbieneman/BodybuildingApp/.claude/hooks/hotfire_guard.py",
             "timeout": 10,
-            "statusMessage": "Checking deletion scope"
+            "statusMessage": "Hotfire guard: checking deletion scope + downloads"
           }
         ]
       }

@@ -13,22 +13,29 @@ afterward.
 
 The switch is `permissions.defaultMode` in `.claude/settings.local.json`.
 
-- **`/hotfire on`**: set `"defaultMode": "dontAsk"` inside the `permissions`
-  object (Edit the file; preserve everything else in it). Then confirm to the
-  user that Hotfire is active and restate the contract below in two sentences.
+- **`/hotfire on`**: set `"defaultMode": "bypassPermissions"` inside the
+  `permissions` object (Edit the file; preserve everything else in it). Then
+  confirm to the user that Hotfire is active and restate the contract below in
+  two sentences.
 - **`/hotfire off`**: set `"defaultMode": "default"`. Confirm deactivation and
   give a one-paragraph debrief of what was done while it was active (commits,
   tests, open items).
 - **`/hotfire status`**: read the file and report which mode is set, plus
   current session usage posture if known.
 
-With `dontAsk` active, everything runs without prompting EXCEPT the
-`permissions.ask` rules (internet downloads: curl/wget/npm/npx/brew/git
-clone/pod/gem) and the PreToolUse guard in
-`.claude/hooks/check_rm_scope.py`, which forces a prompt for any `rm`
-resolving outside the project. Do not weaken either list while Hotfire is
-active; genuine decisions that need the user's input (scope changes,
-destructive trade-offs) still go to AskUserQuestion.
+`bypassPermissions` is the real Claude Code mode that skips ALL permission
+prompts — and it also ignores the `permissions.allow`/`ask` lists, so do NOT
+rely on the `ask` list while Hotfire is on; it does nothing in this mode. The
+only thing that can still force a prompt under `bypassPermissions` is a
+**PreToolUse hook** (hooks run in every mode). The guard
+`.claude/hooks/hotfire_guard.py` forces a prompt for exactly two things:
+(1) deletions of files outside this project (rm/rmdir/unlink, `find -delete`;
+`/tmp` is in-scope scratch), and (2) network downloads (curl/wget/git
+clone/npm/npx/brew/gem/pod/pip installs). Everything else runs without
+prompting. Do not weaken the guard while Hotfire is active; keep the
+`allow`/`ask` lists sane because they still apply in the `/hotfire off`
+(`default`) state. Genuine decisions that need the user's input (scope
+changes, destructive trade-offs) still go to AskUserQuestion.
 
 ## Contract while Hotfire is active
 

@@ -70,7 +70,7 @@ Typical feature flow: hypertrophy-scientist spec → quant-modeler algorithm des
 
 `/hotfire on|off` toggles the autonomous work mode (defined in
 `.claude/skills/hotfire/SKILL.md`). If `permissions.defaultMode` is
-`"dontAsk"` in `.claude/settings.local.json`, Hotfire is ACTIVE and its
+`"bypassPermissions"` in `.claude/settings.local.json`, Hotfire is ACTIVE and its
 contract is binding: a review of every milestone diff (verification-engineer
 for algorithm/math changes, `/code-review` at medium+), the full `swift test`
 suite green before every commit, a cited source for every new science default,
