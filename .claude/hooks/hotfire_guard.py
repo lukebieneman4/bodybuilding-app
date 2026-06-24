@@ -23,7 +23,7 @@ import shlex
 import sys
 
 # ---- per-project config -------------------------------------------------
-PROJECT = "/Users/lukasbieneman/BodybuildingApp"
+PROJECT = "/Users/lukasbieneman/VSCodeProjects/BodybuildingApp"
 # Roots where deletions run without a prompt (project + declared scratch dirs).
 ALLOWED_DELETE_ROOTS = [PROJECT, "/tmp"]
 # Gate pip installs like any other download for this project.

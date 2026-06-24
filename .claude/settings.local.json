@@ -61,7 +61,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 /Users/lukasbieneman/BodybuildingApp/.claude/hooks/hotfire_guard.py",
+            "command": "python3 /Users/lukasbieneman/VSCodeProjects/BodybuildingApp/.claude/hooks/hotfire_guard.py",
             "timeout": 10,
             "statusMessage": "Hotfire guard: checking deletion scope + downloads"
           }
