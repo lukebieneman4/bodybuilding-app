@@ -78,11 +78,32 @@ the web tool proves itself in real use (a diet phase). See
   one comparable series (currently excluded from the summary); fuzzy exercise-name merging;
   label FBEOD sessions' gym; surgical side from profile (defaults R)
 
+## M6 — Installable web app (PWA + GitHub Pages) ✅
+- ✅ PWA manifest (`web/public/manifest.webmanifest`): standalone display, teal
+  theme, maskable icons → "Add to Home Screen" gives a fullscreen app on iOS
+- ✅ App icons (192/512/180) generated from `web/public/app-icon.svg` (teal
+  dumbbell, matches the app palette) via `qlmanage` + `sips`; iOS
+  `apple-touch-icon` + apple-mobile-web-app meta tags in `index.html`
+- ✅ Offline service worker (`web/public/sw.js`): network-first navigations
+  (always fresh online, opens offline in a no-signal gym), cache-first for
+  Vite's hashed assets; caches only `response.ok`. localStorage data untouched.
+  Registered in `main.ts` (production builds only)
+- ✅ `base: './'` in `vite.config.ts` so the build works under any Pages subpath
+  without hardcoding the repo name
+- ✅ GitHub Actions deploy (`.github/workflows/deploy.yml`): build `web/` and
+  publish `web/dist` to Pages on push to `main`
+- ⬜ (user step) push to GitHub, set Pages source = GitHub Actions, Add to Home Screen
+
 ## Stretch
 - ⬜ AI coach (Claude API over the structured data + rule engine) — intake interview, free-form Q&A
-- ⬜ Deploy (static host), PWA/offline polish
+- ⬜ Cross-device sync / cloud backup (currently data is local to one device)
 - ⬜ Native iOS revisit only if web proves out
 
 ## Housekeeping
 - ⬜ Resolve 5 high-severity npm advisories (transitive dev deps; `npm audit`)
 - ⬜ Silence 6 benign svelte-check warnings (intake form one-time prefill)
+- ⬜ Swift `CoreCheck` can't build in this environment: the Command Line Tools
+  SDK fails to build `Foundation` (`'CarbonCore/Folders.h' file not found` →
+  `could not build module 'CoreServices'`). Pre-existing toolchain breakage,
+  unrelated to the TS app; repair via `xcode-select --install` / reinstall CLT.
+  The web suite (vitest 80/80, svelte-check 0 errors) is the active verification.
