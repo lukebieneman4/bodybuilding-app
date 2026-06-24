@@ -10,6 +10,13 @@ export function dayDiff(a: string, b: string): number {
   );
 }
 
+/** ISO date `days` after `start`. */
+function isoPlus(start: string, days: number): string {
+  const d = new Date(start + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
 export type TrackStatus = 'on' | 'fast' | 'slow';
 
 export interface WeightAnalysis {
@@ -23,7 +30,12 @@ export interface WeightAnalysis {
   ideal: { days: number[]; values: number[] };
   projection: { days: number[]; level: number[]; goalEtaDay: number | null };
   goalDisplay: number;
+  /** Day offset of the planned goal date (deadline), if the pace mode implies one. */
   targetDateDay: number | null;
+  /** ISO date of the planned goal date, if the pace mode implies one. */
+  deadlineISO: string | null;
+  /** True when the plan moves weight down (goal below start). */
+  planLosing: boolean;
   lastDay: number;
   current: {
     trendDisplay: number;
@@ -111,10 +123,21 @@ export function analyzeWeight(weighIns: WeighIn[], profile: Profile): WeightAnal
   const goalKg = profile.goalKg;
   const losing = goalKg < startKg;
 
-  // horizon: explicit deadline, else derived from the target rate
+  // horizon + deadline are set by the chosen pace mode:
+  //   'date'     — an explicit goal date
+  //   'duration' — N weeks from the first weigh-in (day 0)
+  //   'rate'     — open-ended; horizon derived from the target rate, no deadline
   let prepDays: number;
-  if (profile.targetDate) {
-    prepDays = Math.max(dayDiff(first, profile.targetDate), lastDay + 1);
+  let targetDateDay: number | null = null;
+  let deadlineISO: string | null = null;
+  if (profile.paceMode === 'date' && profile.targetDate) {
+    targetDateDay = dayDiff(first, profile.targetDate);
+    deadlineISO = profile.targetDate;
+    prepDays = Math.max(targetDateDay, lastDay + 1);
+  } else if (profile.paceMode === 'duration' && profile.durationWeeks) {
+    targetDateDay = Math.round(profile.durationWeeks * 7);
+    deadlineISO = isoPlus(first, targetDateDay);
+    prepDays = Math.max(targetDateDay, lastDay + 1);
   } else {
     const dailyKg = ((profile.targetRatePctPerWeek / 100) * startKg) / 7;
     prepDays = Math.round(lastDay + Math.abs(startKg - goalKg) / Math.max(dailyKg, 1e-6));
@@ -188,7 +211,9 @@ export function analyzeWeight(weighIns: WeighIn[], profile: Profile): WeightAnal
     ideal: { days: ideal.values.map((_, i) => i), values: idealVals },
     projection: { days: projDaysAbs, level: projLevelDisp, goalEtaDay },
     goalDisplay,
-    targetDateDay: profile.targetDate ? dayDiff(first, profile.targetDate) : null,
+    targetDateDay,
+    deadlineISO,
+    planLosing: losing,
     lastDay,
     current: {
       trendDisplay: toDisp(lastTrendKg),

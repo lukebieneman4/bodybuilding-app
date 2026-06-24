@@ -6,11 +6,9 @@ import { lbToKg } from '../data/types';
 
 function profile(over: Partial<Profile> = {}): Profile {
   return {
-    heightCm: 183,
     units: 'lb',
     goalKg: lbToKg(187),
-    goalLowKg: lbToKg(185),
-    goalHighKg: lbToKg(190),
+    paceMode: 'rate',
     targetRatePctPerWeek: 0.5,
     createdAt: '2026-01-01',
     ...over,
@@ -22,6 +20,7 @@ interface AOpts {
   idealKgWk?: number;
   etaWeeks?: number | null;
   targetDateDay?: number | null;
+  planLosing?: boolean;
 }
 function analysis(trendLb: number, ratePct: number, status: TrackStatus, o: AOpts = {}): WeightAnalysis {
   const trendKg = lbToKg(trendLb);
@@ -31,6 +30,8 @@ function analysis(trendLb: number, ratePct: number, status: TrackStatus, o: AOpt
     units: 'lb',
     lastDay: o.lastDay ?? 70,
     targetDateDay: o.targetDateDay ?? null,
+    deadlineISO: null,
+    planLosing: o.planLosing ?? true,
     current: {
       trendDisplay: trendLb,
       trendKg,
@@ -55,9 +56,23 @@ describe('cited insights', () => {
     expect(list.find((x) => x.id === 'too-fast')?.severity).toBe('warn');
   });
 
-  it('flags goal-range arrival', () => {
+  it('flags goal arrival (single goal weight)', () => {
     const list = ids(profile(), analysis(187, -0.3, 'on'), 30);
     expect(list.some((x) => x.id === 'in-goal')).toBe(true);
+  });
+
+  it('does not flag goal arrival while still well above goal', () => {
+    const list = ids(profile(), analysis(200, -0.6, 'on'), 30);
+    expect(list.some((x) => x.id === 'in-goal')).toBe(false);
+  });
+
+  it('flags the deadline in duration mode (no explicit targetDate)', () => {
+    const list = ids(
+      profile({ paceMode: 'duration', durationWeeks: 12 }),
+      analysis(195, -0.4, 'on', { targetDateDay: 84, etaWeeks: 8, lastDay: 70 }),
+      30
+    );
+    expect(list.some((x) => x.id === 'target-date')).toBe(true);
   });
 
   it('adds recovery caution when notes mention surgery', () => {

@@ -80,26 +80,25 @@ export function buildInsights(
   const idealPctAbs = Math.abs((c.idealRatePerWkKg * 100) / currentKg);
   const weeksLogged = analysis.lastDay / 7;
   const recovery = RECOVERY_RE.test(profile.notes ?? '');
-  const inGoal =
-    profile.goalLowKg != null &&
-    profile.goalHighKg != null &&
-    currentKg <= profile.goalHighKg &&
-    currentKg >= profile.goalLowKg;
+  const GOAL_TOL_KG = 0.45; // ~1 lb either side of the single goal weight
+  const reachedGoal = analysis.planLosing
+    ? currentKg <= profile.goalKg + GOAL_TOL_KG
+    : currentKg >= profile.goalKg - GOAL_TOL_KG;
 
   // 1) goal proximity wins — if you're there, stop cutting
-  if (inGoal) {
+  if (reachedGoal) {
     out.push({
       id: 'in-goal',
       severity: 'good',
-      title: 'You are in your goal range',
+      title: 'You have reached your goal',
       detail:
-        'Your trend is inside the range you set. Consider transitioning to maintenance calories to lock in the result rather than continuing to lose.',
+        'Your trend is at (or past) your goal weight. Consider transitioning to maintenance calories to lock in the result rather than continuing to lose.',
       cite: 'Helms 2014',
     });
   }
 
   // 2) rate vs pace — with a computed, numeric intake adjustment
-  if (!inGoal && losing && ratePctAbs > 1.0) {
+  if (!reachedGoal && losing && ratePctAbs > 1.0) {
     const adj = kcalAdjustment(analysis, calories);
     out.push({
       id: 'too-fast',
@@ -110,7 +109,7 @@ export function buildInsights(
         `To return to your ~${idealPctAbs.toFixed(2)}%/wk plan, ${adj.phrase}`,
       cite: 'Garthe 2011; Helms 2014; Hall 2008',
     });
-  } else if (!inGoal && c.status === 'fast') {
+  } else if (!reachedGoal && c.status === 'fast') {
     const adj = kcalAdjustment(analysis, calories);
     out.push({
       id: 'slightly-fast',
@@ -119,7 +118,7 @@ export function buildInsights(
       detail: `Fine short-term. To ease back to plan, ${adj.phrase}`,
       cite: 'Helms 2014; Hall 2008',
     });
-  } else if (!inGoal && c.status === 'slow') {
+  } else if (!reachedGoal && c.status === 'slow') {
     const adj = kcalAdjustment(analysis, calories);
     out.push({
       id: 'behind',
@@ -130,7 +129,7 @@ export function buildInsights(
         `(or burn the equivalent — roughly ${Math.round((adj.kcal / 100) * 2)}k extra steps/day).`,
       cite: 'Helms 2014; Hall 2008',
     });
-  } else if (!inGoal && analysis.hasEnough) {
+  } else if (!reachedGoal && analysis.hasEnough) {
     out.push({
       id: 'on-track',
       severity: 'good',
@@ -170,15 +169,16 @@ export function buildInsights(
     });
   }
 
-  // 3) target-date reality check — makes the deadline matter
-  if (profile.targetDate && analysis.targetDateDay != null) {
+  // 3) target-date reality check — makes the deadline matter (date or duration mode)
+  if (analysis.targetDateDay != null) {
+    const by = analysis.deadlineISO ?? profile.targetDate ?? 'your target date';
     const targetWeeks = (analysis.targetDateDay - analysis.lastDay) / 7;
     if (c.etaWeeks == null) {
       out.push({
         id: 'target-date',
         severity: 'warn',
         title: 'Not on track for your target date',
-        detail: `At the current trend you are not heading to goal by ${profile.targetDate}. A deficit (or a larger one) is needed to make the date.`,
+        detail: `At the current trend you are not heading to goal by ${by}. A deficit (or a larger one) is needed to make the date.`,
         cite: 'Helms 2014',
       });
     } else {
@@ -188,7 +188,7 @@ export function buildInsights(
           id: 'target-date',
           severity: 'good',
           title: 'On pace for your target date',
-          detail: `Projected to reach goal right around ${profile.targetDate}.`,
+          detail: `Projected to reach goal right around ${by}.`,
           cite: 'Helms 2014',
         });
       } else if (diff > 1) {
@@ -196,7 +196,7 @@ export function buildInsights(
           id: 'target-date',
           severity: 'info',
           title: `~${Math.round(diff)} wk behind your target date`,
-          detail: `Projected to hit goal about ${Math.round(diff)} week(s) after ${profile.targetDate}. The intake change above closes that gap; a softer date also works.`,
+          detail: `Projected to hit goal about ${Math.round(diff)} week(s) after ${by}. The intake change above closes that gap; a softer date also works.`,
           cite: 'Helms 2014',
         });
       } else {
@@ -204,7 +204,7 @@ export function buildInsights(
           id: 'target-date',
           severity: 'info',
           title: `~${Math.round(-diff)} wk ahead of your target date`,
-          detail: `Projected to reach goal about ${Math.round(-diff)} week(s) before ${profile.targetDate} — you have buffer and could ease the deficit.`,
+          detail: `Projected to reach goal about ${Math.round(-diff)} week(s) before ${by} — you have buffer and could ease the deficit.`,
           cite: 'Helms 2014',
         });
       }

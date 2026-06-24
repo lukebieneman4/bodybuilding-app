@@ -73,6 +73,10 @@ export const store = {
     for (const w of list) upsertByDate(data.weighIns, w);
     persist();
   },
+  importCalories(list: CalorieEntry[]): void {
+    for (const c of list) upsertByDate(data.calories, c);
+    persist();
+  },
   setData(weighIns: WeighIn[], calories: CalorieEntry[]): void {
     data.weighIns = [...weighIns].sort((a, b) => a.date.localeCompare(b.date));
     data.calories = [...calories].sort((a, b) => a.date.localeCompare(b.date));

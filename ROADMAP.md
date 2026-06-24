@@ -94,6 +94,23 @@ the web tool proves itself in real use (a diet phase). See
   publish `web/dist` to Pages on push to `main`
 - ⬜ (user step) push to GitHub, set Pages source = GitHub Actions, Add to Home Screen
 
+## M7 — Profile simplification + faster logging ✅
+- ✅ Profile overhaul: single goal weight (dropped goal *range* and current-intake
+  inputs; height no longer collected). Pace toward goal is one of three modes —
+  **rate** (%/wk, open-ended), **end date**, or **duration** (weeks) — via
+  `Profile.paceMode`; `analyzeWeight` derives the horizon + deadline per mode and
+  exposes `planLosing` / `deadlineISO` (4 new pace-mode tests)
+- ✅ Insights: range-based "in goal" → single-goal "reached your goal" (±~1 lb);
+  target-date reality-check now fires for duration mode too
+- ✅ Notes-style bulk logging (`BulkLog.svelte` + Daily/Paste toggle): pick a start
+  date, paste `weight - calories` one line per day, `NA`/blank skips a field but
+  still consumes the day so dates stay aligned. Pure tested parser
+  (`lib/data/bulklog.ts`, 6 tests vs the user's exact format)
+- ✅ Back-compat: a stored profile from before paceMode existed falls back to rate mode
+- Note: verified the trend filter on the user's first 3 real days — the conservative
+  ~0.12 lb/wk (vs −3.85 raw) with a ±3 lb/wk band is correct small-sample Kalman
+  behavior; converges to the true rate by ~2–3 weeks as the band tightens
+
 ## Stretch
 - ⬜ AI coach (Claude API over the structured data + rule engine) — intake interview, free-form Q&A
 - ⬜ Cross-device sync / cloud backup (currently data is local to one device)

@@ -6,6 +6,7 @@
   import { buildInsights } from './lib/insights/insights';
   import IntakeForm from './lib/components/IntakeForm.svelte';
   import QuickLog from './lib/components/QuickLog.svelte';
+  import BulkLog from './lib/components/BulkLog.svelte';
   import WeightChart from './lib/components/WeightChart.svelte';
   import TDEEChart from './lib/components/TDEEChart.svelte';
   import Insights from './lib/components/Insights.svelte';
@@ -16,13 +17,14 @@
 
   let editing = $state(false);
   let view = $state<'body' | 'lifts'>('body');
+  let logMode = $state<'daily' | 'paste'>('daily');
 
   // Demo hook: /?liftdemo seeds the bundled training log so the lift views can be
   // viewed (and headlessly rendered) without manual paste. No-op without the flag.
   $effect(() => {
     if (typeof location === 'undefined' || !new URLSearchParams(location.search).has('liftdemo')) return;
     if (!store.profile) {
-      store.setProfile({ heightCm: 183, units: 'lb', goalKg: 85, targetRatePctPerWeek: 0.5, createdAt: new Date().toISOString() });
+      store.setProfile({ units: 'lb', goalKg: 85, paceMode: 'rate', targetRatePctPerWeek: 0.5, createdAt: new Date().toISOString() });
     }
     if (store.liftSessions.length === 0) {
       store.setLiftSessions(assignCadenceDates(parseWorkoutLog(SAMPLE_LOG).sessions, '2026-01-01'));
@@ -59,7 +61,6 @@
       startKg: start,
       goalKg: profile.goalKg,
       ratePctPerWeek: profile.targetRatePctPerWeek,
-      maintenanceKcal: profile.currentIntakeKcal ?? 2900,
       days: 84,
     });
     store.setData(d.weighIns, d.calories);
@@ -100,7 +101,15 @@
     </nav>
 
     {#if view === 'body'}
-    <QuickLog />
+    <div class="tabs logtoggle">
+      <button class:active={logMode === 'daily'} onclick={() => (logMode = 'daily')}>Daily</button>
+      <button class:active={logMode === 'paste'} onclick={() => (logMode = 'paste')}>Paste log</button>
+    </div>
+    {#if logMode === 'daily'}
+      <QuickLog />
+    {:else}
+      <BulkLog />
+    {/if}
 
     {#if analysis}
       <section class="card chartcard">

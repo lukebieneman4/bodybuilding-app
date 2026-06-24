@@ -16,22 +16,25 @@ export interface CalorieEntry {
   kcal: number;
 }
 
+/** How the pace toward the goal is defined — the user picks exactly one. */
+export type PaceMode = 'rate' | 'date' | 'duration';
+
 export interface Profile {
-  heightCm: number;
   units: Units;
-  /** Goal weight in kg (canonical). */
+  /** Goal weight in kg (canonical). Single target — no range. */
   goalKg: number;
-  /** Optional goal range, kg. */
-  goalLowKg?: number;
-  goalHighKg?: number;
-  /** Target loss/gain rate, %bodyweight per week (positive = loss). */
+  /** Which pacing knob defines the phase. */
+  paceMode: PaceMode;
+  /** Target loss/gain rate, %bodyweight per week (positive = loss). Used when paceMode === 'rate'. */
   targetRatePctPerWeek: number;
-  /** Optional hard deadline, ISO date. */
+  /** Hard deadline, ISO date. Used when paceMode === 'date'. */
   targetDate?: string;
-  /** Current/maintenance intake estimate, kcal. */
-  currentIntakeKcal?: number;
+  /** Phase length in weeks from the first weigh-in. Used when paceMode === 'duration'. */
+  durationWeeks?: number;
   /** Free-text context (e.g. injury/recovery), shapes insights. */
   notes?: string;
+  /** Optional — no longer collected in the form, kept for back-compat with stored profiles. */
+  heightCm?: number;
   createdAt: string;
 }
 
