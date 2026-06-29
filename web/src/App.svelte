@@ -27,7 +27,8 @@
       store.setProfile({ units: 'lb', goalKg: 85, paceMode: 'rate', targetRatePctPerWeek: 0.5, createdAt: new Date().toISOString() });
     }
     if (store.liftSessions.length === 0) {
-      store.setLiftSessions(assignCadenceDates(parseWorkoutLog(SAMPLE_LOG).sessions, todayISO()));
+      const today = todayISO();
+      store.setLiftLog(SAMPLE_LOG, today, assignCadenceDates(parseWorkoutLog(SAMPLE_LOG).sessions, today));
     }
     view = 'lifts';
   });

@@ -84,7 +84,7 @@
   <section class="card tools">
     <h3>Lift data</h3>
     <div class="row wrap">
-      <button class="ghost" onclick={() => (reimport = true)}>Import more / replace</button>
+      <button class="ghost" onclick={() => (reimport = true)}>View / edit log</button>
       <button class="ghost danger" onclick={() => store.clearLifts()}>Clear lifts</button>
     </div>
     <p class="hint">{sessions.length} sessions loaded.</p>

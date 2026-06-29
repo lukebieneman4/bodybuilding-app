@@ -10,10 +10,14 @@ interface Persisted {
   weighIns: WeighIn[];
   calories: CalorieEntry[];
   liftSessions: LiftSession[];
+  /** Raw pasted training log — the editable source of truth; sessions are derived from it. */
+  liftLog: string;
+  /** Anchor date for the most recent session (ISO) when (re)deriving sessions from liftLog. */
+  liftLogEndDate: string;
 }
 
 function load(): Persisted {
-  const empty: Persisted = { profile: null, weighIns: [], calories: [], liftSessions: [] };
+  const empty: Persisted = { profile: null, weighIns: [], calories: [], liftSessions: [], liftLog: '', liftLogEndDate: '' };
   if (typeof localStorage === 'undefined') return empty;
   try {
     const raw = localStorage.getItem(KEY);
@@ -61,12 +65,27 @@ export const store = {
   get liftSessions(): LiftSession[] {
     return data.liftSessions;
   },
+  get liftLog(): string {
+    return data.liftLog;
+  },
+  get liftLogEndDate(): string {
+    return data.liftLogEndDate;
+  },
   setLiftSessions(sessions: LiftSession[]): void {
+    data.liftSessions = [...sessions].sort((a, b) => (a.date ?? '').localeCompare(b.date ?? ''));
+    persist();
+  },
+  /** Save the raw log (source of truth) together with the resolved, dated sessions it produced. */
+  setLiftLog(log: string, endDate: string, sessions: LiftSession[]): void {
+    data.liftLog = log;
+    data.liftLogEndDate = endDate;
     data.liftSessions = [...sessions].sort((a, b) => (a.date ?? '').localeCompare(b.date ?? ''));
     persist();
   },
   clearLifts(): void {
     data.liftSessions = [];
+    data.liftLog = '';
+    data.liftLogEndDate = '';
     persist();
   },
   importWeighIns(list: WeighIn[]): void {

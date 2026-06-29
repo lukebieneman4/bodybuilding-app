@@ -6,10 +6,13 @@
 
   let { ondone }: { ondone?: () => void } = $props();
 
-  let text = $state('');
-  // Anchor the most-recent session to this date (default today), so the charts
-  // end at "now". Earlier sessions are spaced backward by training cadence.
-  let endDate = $state(todayISO());
+  // The saved log is the source of truth: prefill it so this view is also the
+  // editor. Add new sessions by appending lines; charts re-derive on save.
+  let text = $state(store.liftLog);
+  const editingExisting = store.liftLog.trim() !== '';
+  // Anchor the most-recent session to this date (default today / last used), so
+  // the charts end at "now". Earlier sessions are spaced backward by cadence.
+  let endDate = $state(store.liftLogEndDate || todayISO());
 
   const parsed = $derived(text.trim() ? parseWorkoutLog(text) : null);
   const totalExercises = $derived(
@@ -19,20 +22,29 @@
     parsed ? parsed.sessions.reduce((n, s) => n + s.exercises.filter((e) => e.flagged).length, 0) : 0
   );
 
+  // Cadence-resolved sessions, plus an editable per-session date override list.
+  // `dates` re-seeds whenever the cadence result changes (text / anchor edits);
+  // editing a single field overrides just that session's date.
+  const dated = $derived(parsed ? assignCadenceDates(parsed.sessions, endDate) : []);
+  let dates = $state<string[]>([]);
+  $effect(() => {
+    dates = dated.map((d) => d.date ?? '');
+  });
+
   function save(): void {
     if (!parsed || parsed.sessions.length === 0) return;
-    const dated = assignCadenceDates(parsed.sessions, endDate);
-    store.setLiftSessions(dated);
-    text = '';
+    const sessions = dated.map((s, i) => ({ ...s, date: dates[i] || s.date }));
+    store.setLiftLog(text, endDate, sessions);
     ondone?.();
   }
 </script>
 
 <section class="card import">
-  <h2>Import your training log</h2>
+  <h2>{editingExisting ? 'Your training log' : 'Import your training log'}</h2>
   <p class="hint">
-    Paste your workout notes exactly as you log them — one exercise per line, sessions starting with a
-    title line ending in “:”. Nothing is saved until you review the preview and hit Import.
+    {editingExisting
+      ? 'Edit any line, or append new sessions at the bottom — this is your full running log. Nothing is saved until you review the preview and hit Save.'
+      : 'Paste your workout notes exactly as you log them — one exercise per line, sessions starting with a title line ending in “:”. Nothing is saved until you review the preview and hit Import.'}
   </p>
 
   <textarea
@@ -56,8 +68,9 @@
       </div>
 
       <ul class="sessions">
-        {#each parsed.sessions as s}
+        {#each parsed.sessions as s, i}
           <li>
+            <input type="date" class="sdate" bind:value={dates[i]} aria-label="date for {s.title || 'session'}" />
             <span class="title">{s.title || '(untitled)'}</span>
             {#if s.location}<span class="loc">{s.location}</span>{/if}
             <span class="count">{s.exercises.length} lifts</span>
@@ -74,11 +87,11 @@
 
       <div class="row">
         <label>Most recent session<input type="date" bind:value={endDate} /></label>
-        <span class="hint">Your latest session lands on this date (default today); earlier ones are spaced backward by cadence (FBEOD every other day; Ant/Post 2-on-1-off).</span>
+        <span class="hint">Your latest session lands on this date (default today); earlier ones are spaced backward by cadence (FBEOD every other day; Ant/Post 2-on-1-off). Override any individual date above.</span>
       </div>
 
       <button class="primary" onclick={save} disabled={parsed.sessions.length === 0}>
-        Import {parsed.sessions.length} sessions
+        Save {parsed.sessions.length} sessions
       </button>
     </div>
   {/if}
@@ -134,6 +147,14 @@
     font-size: 13px;
     padding: 4px 0;
     border-bottom: 1px solid #F0ECE3;
+  }
+  .sdate {
+    font-size: 11px;
+    padding: 1px 4px;
+    border: 1px solid var(--line, #E3DDD0);
+    border-radius: 6px;
+    color: var(--sub, #6B7280);
+    background: #FBFAF7;
   }
   .title {
     font-weight: 600;
