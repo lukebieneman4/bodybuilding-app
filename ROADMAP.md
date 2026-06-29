@@ -111,13 +111,37 @@ the web tool proves itself in real use (a diet phase). See
   ~0.12 lb/wk (vs −3.85 raw) with a ±3 lb/wk band is correct small-sample Kalman
   behavior; converges to the true rate by ~2–3 weeks as the band tightens
 
+## M8 — Current-data timeline + editable logs ✅
+- ✅ Lift timeline anchored to **now**: cadence dating lands the MOST RECENT
+  session on the anchor date (default today) and runs earlier sessions backward
+  (`assignCadenceDates` `anchor:'end'`), instead of marching forward from a
+  "first session" start that stranded recent weeks in the future. 7 dates tests.
+- ✅ Real calendar-date x-axis on the strength trend + summary charts (was an
+  abstract "Day 0..N"); `StrengthSummary.startDate` + `shortDate` helper.
+- ✅ Weekly volume window 14d → **7d** ("this week"), ending at the most recent
+  session, so volume reflects the current microcycle, not a 2-week blend.
+- ✅ Editable running **lift log**: raw pasted text is the source of truth
+  (`store.liftLog` + `liftLogEndDate`); the import screen doubles as a
+  view/edit/append editor that re-derives sessions on Save. Per-session date
+  editing in the preview (seeded from cadence, individually overridable).
+- ✅ Bodyweight **log parity**: `formatBulkLog` serializes weigh-ins+calories
+  back into the `weight - calories` paste format (round-trip tested); the Paste
+  tab prefills from existing data and Save replaces the series (edits/deletions
+  take effect) instead of blind-appending.
+- ✅ vitest 101/101, svelte-check 0 errors; every change rendered & inspected
+  headlessly (Playwright) — timeline ends at today, editors round-trip.
+
 ## Stretch
 - ⬜ AI coach (Claude API over the structured data + rule engine) — intake interview, free-form Q&A
 - ⬜ Cross-device sync / cloud backup (currently data is local to one device)
 - ⬜ Native iOS revisit only if web proves out
 
 ## Housekeeping
-- ⬜ Resolve 5 high-severity npm advisories (transitive dev deps; `npm audit`)
+- ✅ npm advisories: the 5 high-severity ones are gone (resolved by the vite 8 /
+  modern-toolchain upgrade). One **low**-severity remains — esbuild dev-server
+  arbitrary file read, **Windows-only, dev-server-only** (GHSA-g7r4-m6w7-qqqr),
+  a vite transitive dep that never ships in the production build. Its only fix is
+  a breaking `npm audit fix --force` major bump; not worth the toolchain risk.
 - ⬜ Silence 6 benign svelte-check warnings (intake form one-time prefill)
 - ⬜ Swift `CoreCheck` can't build in this environment: the Command Line Tools
   SDK fails to build `Foundation` (`'CarbonCore/Folders.h' file not found` →
