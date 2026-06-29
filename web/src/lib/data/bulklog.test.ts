@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseBulkLog, summarize } from './bulklog';
+import { parseBulkLog, summarize, formatBulkLog } from './bulklog';
 
 describe('parseBulkLog', () => {
   it("parses the user's notes-style example", () => {
@@ -46,6 +46,29 @@ describe('parseBulkLog', () => {
     expect(rows).toHaveLength(3); // trailing blanks dropped
     expect(rows[1].weight).toBeNull(); // interior blank = skipped day
     expect(rows[2].date).toBe('2026-06-29'); // alignment preserved
+  });
+
+  it('round-trips through formatBulkLog (serialize → parse)', () => {
+    const weighIns = [
+      { date: '2026-06-27', weight: 201.2 },
+      { date: '2026-06-29', weight: 199.3 }, // gap on the 28th
+    ];
+    const calories = [
+      { date: '2026-06-27', kcal: 2400 },
+      { date: '2026-06-28', kcal: 2200 }, // calorie-only day
+    ];
+    const { text, startDate } = formatBulkLog(weighIns, calories);
+    expect(startDate).toBe('2026-06-27');
+    expect(text).toBe(['201.2 - 2400', 'NA - 2200', '199.3 - NA'].join('\n'));
+
+    const rows = parseBulkLog(text, startDate);
+    expect(rows.map((r) => r.weight)).toEqual([201.2, null, 199.3]);
+    expect(rows.map((r) => r.kcal)).toEqual([2400, 2200, null]);
+    expect(rows.map((r) => r.date)).toEqual(['2026-06-27', '2026-06-28', '2026-06-29']);
+  });
+
+  it('formatBulkLog returns empty for no data', () => {
+    expect(formatBulkLog([], [])).toEqual({ text: '', startDate: '' });
   });
 
   it('summarizes counts and date range', () => {

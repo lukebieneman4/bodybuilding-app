@@ -1,13 +1,23 @@
 <script lang="ts">
   import { store, todayISO } from '../data/store.svelte';
-  import { toKg } from '../data/types';
+  import { toKg, fromKg } from '../data/types';
   import type { WeighIn, CalorieEntry } from '../data/types';
-  import { parseBulkLog, summarize } from '../data/bulklog';
+  import { parseBulkLog, summarize, formatBulkLog } from '../data/bulklog';
 
   const units = $derived(store.profile?.units ?? 'lb');
 
-  let startDate = $state(todayISO());
-  let text = $state('');
+  // Prefill from existing data so this box VIEWS and EDITS the full running log,
+  // not just appends — parity with the lift log. Saving replaces the series with
+  // the parsed text (so edits and deletions take effect).
+  const initUnits = store.profile?.units ?? 'lb';
+  const initial = formatBulkLog(
+    store.weighIns.map((w) => ({ date: w.date, weight: fromKg(w.weightKg, initUnits) })),
+    store.calories.map((c) => ({ date: c.date, kcal: c.kcal })),
+  );
+  const hasExisting = initial.text !== '';
+
+  let startDate = $state(initial.startDate || todayISO());
+  let text = $state(initial.text);
 
   const rows = $derived(parseBulkLog(text, startDate));
   const stats = $derived(summarize(rows));
@@ -21,9 +31,8 @@
       if (r.weight !== null) w.push({ date: r.date, weightKg: toKg(r.weight, units) });
       if (r.kcal !== null) c.push({ date: r.date, kcal: r.kcal });
     }
-    if (w.length) store.importWeighIns(w);
-    if (c.length) store.importCalories(c);
-    text = '';
+    // Full-log editor: replace the series with exactly what's in the box.
+    store.setData(w, c);
   }
 </script>
 
@@ -34,7 +43,7 @@
   </div>
 
   <label class="full">
-    Log ({units} − calories), one day per line
+    {hasExisting ? `Your weight log (${units} − calories), one day per line` : `Log (${units} − calories), one day per line`}
     <textarea
       rows="8"
       bind:value={text}
@@ -45,6 +54,7 @@
   <p class="hint">
     Format <code>weight - calories</code>. Use <code>NA</code> (or leave blank) to skip a field — a
     skipped day still counts so dates stay aligned. Calories are optional.
+    {#if hasExisting}<br />This is your full weight log — edit any line or append new days, then Save (replaces the series).{/if}
   </p>
 
   {#if text.trim() !== ''}
@@ -64,7 +74,8 @@
   {/if}
 
   <button class="primary" disabled={!canApply} onclick={apply}>
-    {canApply ? `Add ${stats.weighIns} weigh-ins` : 'Add entries'}
+    {#if !canApply}{hasExisting ? 'Save log' : 'Add entries'}
+    {:else}{hasExisting ? `Save ${stats.weighIns} weigh-ins` : `Add ${stats.weighIns} weigh-ins`}{/if}
   </button>
 </div>
 

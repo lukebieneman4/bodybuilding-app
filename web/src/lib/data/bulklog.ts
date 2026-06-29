@@ -66,6 +66,32 @@ export function parseBulkLog(text: string, startDate: string): BulkRow[] {
   });
 }
 
+/**
+ * Serialize dated weigh-ins + calories back into the editable bulk-log format:
+ * one line per consecutive day from the earliest to the latest entry, `weight -
+ * calories`, with `NA` for a missing field. The inverse of {@link parseBulkLog}
+ * (round-trips), so the paste box can also VIEW and EDIT existing data. Weights
+ * are taken in display units already (conversion happens at the UI boundary).
+ */
+export function formatBulkLog(
+  weighIns: { date: string; weight: number }[],
+  calories: { date: string; kcal: number }[],
+): { text: string; startDate: string } {
+  const all = [...weighIns.map((w) => w.date), ...calories.map((c) => c.date)].sort();
+  if (all.length === 0) return { text: '', startDate: '' };
+  const start = all[0];
+  const end = all[all.length - 1];
+  const wMap = new Map(weighIns.map((w) => [w.date, w.weight]));
+  const kMap = new Map(calories.map((c) => [c.date, c.kcal]));
+  const lines: string[] = [];
+  for (let d = start; d <= end; d = isoPlus(d, 1)) {
+    const w = wMap.get(d);
+    const k = kMap.get(d);
+    lines.push(`${w != null ? (+w).toFixed(1) : 'NA'} - ${k != null ? Math.round(k) : 'NA'}`);
+  }
+  return { text: lines.join('\n'), startDate: start };
+}
+
 export interface BulkStats {
   weighIns: number;
   calorieDays: number;
