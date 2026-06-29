@@ -1,8 +1,11 @@
 <script lang="ts">
   import { scaleLinear } from 'd3';
   import type { StrengthSummary, SummaryLine } from '../lift/analysis';
+  import { shortDate } from '../format';
 
   let { summary }: { summary: StrengthSummary } = $props();
+  const xLabel = $derived((t: number): string =>
+    summary.startDate ? shortDate(summary.startDate, t) : t.toFixed(0));
 
   let mode = $state<'muscle' | 'exercise'>('exercise');
   const lines = $derived(mode === 'muscle' ? summary.byMuscle : summary.byExercise);
@@ -64,10 +67,9 @@
       <line x1={M.l} x2={W - M.r} y1={y(t)} y2={y(t)} stroke="#ECE8DF" stroke-width="1" />
       <text x={M.l - 8} y={y(t) + 3} text-anchor="end" font-size="11" fill={palette.sub}>{t}%</text>
     {/each}
-    {#each x.ticks(7) as t}
-      <text x={x(t)} y={H - M.b + 18} text-anchor="middle" font-size="11" fill={palette.sub}>{t.toFixed(0)}</text>
+    {#each x.ticks(6) as t}
+      <text x={x(t)} y={H - M.b + 18} text-anchor="middle" font-size="11" fill={palette.sub}>{xLabel(t)}</text>
     {/each}
-    <text x={(M.l + W - M.r) / 2} y={H - 4} text-anchor="middle" font-size="11" fill={palette.sub}>Day</text>
 
     <!-- baseline: each exercise's own starting strength -->
     <line x1={M.l} x2={W - M.r} y1={y(100)} y2={y(100)} stroke={palette.base} stroke-width="1.2" stroke-dasharray="2 3" />

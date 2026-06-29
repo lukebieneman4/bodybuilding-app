@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { store } from './lib/data/store.svelte';
+  import { store, todayISO } from './lib/data/store.svelte';
   import { analyzeWeight, analyzeIntake } from './lib/core/analysis';
   import { parseWeighInCsv, weighInsToCsv } from './lib/data/csv';
   import { generateSynthetic } from './lib/data/synthetic';
@@ -27,7 +27,7 @@
       store.setProfile({ units: 'lb', goalKg: 85, paceMode: 'rate', targetRatePctPerWeek: 0.5, createdAt: new Date().toISOString() });
     }
     if (store.liftSessions.length === 0) {
-      store.setLiftSessions(assignCadenceDates(parseWorkoutLog(SAMPLE_LOG).sessions, '2026-01-01'));
+      store.setLiftSessions(assignCadenceDates(parseWorkoutLog(SAMPLE_LOG).sessions, todayISO()));
     }
     view = 'lifts';
   });

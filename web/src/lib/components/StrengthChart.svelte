@@ -1,6 +1,7 @@
 <script lang="ts">
   import { scaleLinear } from 'd3';
   import type { StrengthSeries } from '../lift/analysis';
+  import { shortDate } from '../format';
 
   let { series }: { series: StrengthSeries } = $props();
 
@@ -31,6 +32,12 @@
 
   const slopeColor = $derived(s.slopePerWeek >= 0 ? palette.up : palette.down);
   const label = $derived(`${s.rawName}${s.limb ? ' · ' + (s.limb === 'R' ? 'right' : 'left') : ''}${s.location ? ' · ' + s.location : ''}`);
+
+  // Real-calendar x-axis: day 0 of this series maps to (firstDate − firstDay).
+  const baseDate = $derived(s.points[0]?.date ?? null);
+  const baseDay = $derived(s.points[0]?.day ?? 0);
+  const xLabel = $derived((t: number): string =>
+    baseDate ? shortDate(baseDate, t - baseDay) : t.toFixed(0));
 </script>
 
 <svg viewBox="0 0 {W} {H}" class="chart" role="img" aria-label="Strength trend for {label}">
@@ -38,10 +45,9 @@
     <line x1={M.l} x2={W - M.r} y1={y(t)} y2={y(t)} stroke="#ECE8DF" stroke-width="1" />
     <text x={M.l - 8} y={y(t) + 3} text-anchor="end" font-size="11" fill={palette.sub}>{t.toFixed(0)}</text>
   {/each}
-  {#each x.ticks(7) as t}
-    <text x={x(t)} y={H - M.b + 18} text-anchor="middle" font-size="11" fill={palette.sub}>{t.toFixed(0)}</text>
+  {#each x.ticks(6) as t}
+    <text x={x(t)} y={H - M.b + 18} text-anchor="middle" font-size="11" fill={palette.sub}>{xLabel(t)}</text>
   {/each}
-  <text x={(M.l + W - M.r) / 2} y={H - 4} text-anchor="middle" font-size="11" fill={palette.sub}>Day</text>
 
   {#if s.points.length >= 2}
     <path d={band} fill={palette.trend} opacity="0.12" />

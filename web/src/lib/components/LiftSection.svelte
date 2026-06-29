@@ -10,8 +10,9 @@
   let reimport = $state(false);
 
   const sessions = $derived(store.liftSessions);
-  // surgical side defaults to right (per the user's log); window ~2 cadence-weeks.
-  const analysis = $derived(sessions.length ? analyzeLifts(sessions, { surgicalSide: 'R', windowDays: 14 }) : null);
+  // surgical side defaults to right (per the user's log); volume = the current
+  // training week (last 7 days, ending at the most recent session = today).
+  const analysis = $derived(sessions.length ? analyzeLifts(sessions, { surgicalSide: 'R', windowDays: 7 }) : null);
 
   // strength series worth charting (≥2 points), most-logged first
   const series = $derived(
@@ -65,7 +66,7 @@
   <section class="card">
     <div class="cardhead">
       <h2>Weekly volume per muscle</h2>
-      <span class="hint">hard sets/week (RIR ≤ 3) vs evidence-based landmarks · trailing 2 weeks</span>
+      <span class="hint">hard sets/week (RIR ≤ 3) vs evidence-based landmarks · this week</span>
     </div>
     <VolumeChart volume={analysis.volume} />
   </section>

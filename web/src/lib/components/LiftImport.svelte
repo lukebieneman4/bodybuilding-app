@@ -7,7 +7,9 @@
   let { ondone }: { ondone?: () => void } = $props();
 
   let text = $state('');
-  let startDate = $state(todayISO());
+  // Anchor the most-recent session to this date (default today), so the charts
+  // end at "now". Earlier sessions are spaced backward by training cadence.
+  let endDate = $state(todayISO());
 
   const parsed = $derived(text.trim() ? parseWorkoutLog(text) : null);
   const totalExercises = $derived(
@@ -19,7 +21,7 @@
 
   function save(): void {
     if (!parsed || parsed.sessions.length === 0) return;
-    const dated = assignCadenceDates(parsed.sessions, startDate);
+    const dated = assignCadenceDates(parsed.sessions, endDate);
     store.setLiftSessions(dated);
     text = '';
     ondone?.();
@@ -71,8 +73,8 @@
       {/if}
 
       <div class="row">
-        <label>Start date (first session)<input type="date" bind:value={startDate} /></label>
-        <span class="hint">Sessions are spaced by your cadence (FBEOD every other day; Ant/Post 2-on-1-off).</span>
+        <label>Most recent session<input type="date" bind:value={endDate} /></label>
+        <span class="hint">Your latest session lands on this date (default today); earlier ones are spaced backward by cadence (FBEOD every other day; Ant/Post 2-on-1-off).</span>
       </div>
 
       <button class="primary" onclick={save} disabled={parsed.sessions.length === 0}>

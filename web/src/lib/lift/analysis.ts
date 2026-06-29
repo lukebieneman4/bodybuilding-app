@@ -175,6 +175,8 @@ export interface StrengthSummary {
   /** One line per muscle group: mean normalized progress of its exercises. */
   byMuscle: SummaryLine[];
   dayMax: number;
+  /** ISO date of day 0 (the earliest session), for a real-calendar x-axis; null if undated. */
+  startDate: string | null;
 }
 
 export interface SummaryOptions {
@@ -251,7 +253,8 @@ export function strengthSummary(sessions: LiftSession[], opts: SummaryOptions = 
   byMuscle.sort((a, b) => (b.points[b.points.length - 1]?.pct ?? 0) - (a.points[a.points.length - 1]?.pct ?? 0));
 
   const byExercise = [...lines].sort((a, b) => (a.muscle ?? '').localeCompare(b.muscle ?? ''));
-  return { byExercise, byMuscle, dayMax };
+  const startDate = withDays(sessions)[0]?.date ?? null;
+  return { byExercise, byMuscle, dayMax, startDate };
 }
 
 // ---- weekly volume per muscle ----------------------------------------------
