@@ -37,3 +37,6 @@ npm-debug.log*
 #  - superseded run-on log extraction (the PDFKit-lined version is the source)
 prototypes/acl_recovery_review.txt
 prototypes/acl_training_log.txt
+
+# Local MCP server config (machine-specific absolute paths)
+.mcp.json
