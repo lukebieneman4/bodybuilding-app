@@ -50,4 +50,8 @@ describe('volumeStatus — landmark zones (SCIENCE.md §3)', () => {
   it('reports no landmark for adductors', () => {
     expect(volumeStatus('adductors', 10)).toBe('none');
   });
+  it('never flags front delts "below MEV" — they get indirect work from pressing (SCIENCE.md §3)', () => {
+    expect(volumeStatus('front_delt', 0)).not.toBe('below_mev');
+    expect(volumeStatus('front_delt', 4)).toBe('minimum'); // low direct volume = near-MEV, not "below growth threshold"
+  });
 });

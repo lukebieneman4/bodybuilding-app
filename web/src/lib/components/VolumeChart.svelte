@@ -56,7 +56,7 @@
             </li>
           {/each}
           <li class="sum">
-            <span class="ex">trailing 2 weeks ÷ 2</span>
+            <span class="ex">this week</span>
             <span class="calc"></span>
             <span class="sub">{v.setsPerWeek.toFixed(1)}/wk</span>
           </li>

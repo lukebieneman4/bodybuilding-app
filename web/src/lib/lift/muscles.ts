@@ -69,7 +69,11 @@ export const LANDMARKS: Partial<Record<Muscle, Landmark>> = {
   lats: { mev: 10, mav: [14, 22], mrv: 25 },
   side_delt: { mev: 8, mav: [16, 22], mrv: 26 },
   rear_delt: { mev: 6, mav: [12, 18], mrv: 25 },
-  front_delt: { mev: 6, mav: [6, 12], mrv: 18 },
+  // MEV 0: front delts get ample indirect work from pressing — don't nag for
+  // direct volume (SCIENCE.md §3; RP front-delt MEV ~0). Was erroneously 6, the
+  // only muscle taking the high end of its 0–6 MEV range, which false-flagged
+  // "below MEV" exactly the muscle the spec says not to nag.
+  front_delt: { mev: 0, mav: [6, 12], mrv: 18 },
   biceps: { mev: 8, mav: [14, 20], mrv: 26 },
   triceps: { mev: 6, mav: [10, 14], mrv: 18 },
   quads: { mev: 8, mav: [12, 18], mrv: 20 },
