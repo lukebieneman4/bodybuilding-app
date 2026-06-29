@@ -75,6 +75,11 @@ MRV → "recovery risk, consider deload." For a natural lifter, land in MAV and 
 chronic MRV. Front delts/triceps get heavy indirect work from pressing — don't nag
 for direct volume. MV is the target for the **surgical leg in early rehab**.
 
+**Progression rate (Volume Coach default):** volume is added *gradually* across a
+mesocycle, not jumped in one week — recommend **~1–2 sets/muscle/week** toward the
+zone (RP progressive-overload methodology). So the coach caps any single-week
+"add"/"trim" suggestion at ~2 sets even when the gap to MAV is large.
+
 ## 4. Muscle attribution (primary 1.0 / secondary 0.5 fractional credit — a convention)
 
 Single-joint isolation = primary only. Unilateral sets counted per side; surgical-side
