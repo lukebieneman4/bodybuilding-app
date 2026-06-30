@@ -131,8 +131,30 @@ the web tool proves itself in real use (a diet phase). See
 - ✅ vitest 101/101, svelte-check 0 errors; every change rendered & inspected
   headlessly (Playwright) — timeline ends at today, editors round-trip.
 
+## M9 — Lift coach (rule-based) + chart readability ✅
+- ✅ Volume Coach (`lib/lift/advice.ts` `volumeAdvice`): ranked, cited "this week"
+  to-dos from the volume-vs-landmark table — below MEV → "add ~N sets", above MRV
+  → soft "trim ~N" (Pelland 2025 dose-response), in MAV → hold. Guardrails: front
+  delts never nagged (fed by pressing); ACL knee muscles get "build gradually,
+  defer to physio" framing (§5); single-week add/trim capped at ~1–2 sets (RP
+  progressive overload, documented in §3). Concrete-but-hedged tone. 9 tests.
+- ✅ Verified landmark accuracy against RP source + the 2025 Pelland meta-regression
+  (which validates the fractional set-counting); fixed front-delt MEV 6→0 (it was
+  false-flagging the one muscle §3 says not to nag) + stale "÷2" volume label.
+- ✅ Regressing-lift watch (`regressingLifts`): flags lifts whose Kalman e1RM slope
+  falls faster than −1%/wk (informational; ≥4 sessions; skips mixed-load series). 5 tests.
+- ✅ Coach card (`VolumeCoach.svelte`) at the top of the Lifts tab: volume to-dos +
+  in-zone/near-ceiling status + strength watch.
+- ✅ Strength summary chart: replaced the crowded all-lines view with an
+  Overview (one line per muscle) + per-muscle-group drill-down (distinct
+  categorical palette + legend, rescaled y) — `StrengthSummaryChart`.
+- ✅ vitest 116/116, svelte-check 0 errors; rendered & inspected (live DOM).
+
 ## Stretch
-- ⬜ AI coach (Claude API over the structured data + rule engine) — intake interview, free-form Q&A
+- ⬜ AI coach (Claude API, free-form Q&A) — **rule-based coach now shipped (M9)**;
+  Claude API layer over the structured data + rule engine is the remaining piece
+- ⬜ Progression coach: per-exercise next-session load/rep cues (Tier 2); stall detection
+- ⬜ ACL coach: OKC-reintroduction flag + asymmetry-widening alarm (SCIENCE.md §5 templates)
 - ⬜ Cross-device sync / cloud backup (currently data is local to one device)
 - ⬜ Native iOS revisit only if web proves out
 
