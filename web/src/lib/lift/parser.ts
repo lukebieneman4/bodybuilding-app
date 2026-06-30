@@ -269,6 +269,37 @@ export function parseExerciseLine(raw: string): LoggedExercise | null {
   };
 }
 
+/** Per-line problem for the paste-box underline overlay (0-based line index). */
+export interface LineDiagnostic {
+  /** 0-based index into text.split(/\r?\n/). */
+  line: number;
+  /** 'skipped' = not a recognized exercise line; 'flagged' = parsed but uncertain. */
+  kind: 'skipped' | 'flagged';
+  message: string;
+}
+
+/**
+ * Line-level diagnostics for the import textarea, mirroring parseWorkoutLog's
+ * line walk: a non-blank, non-title line is 'skipped' when it isn't an exercise,
+ * or 'flagged' when it parses with uncertainty (so the UI can underline it in
+ * place). Same classification the preview's counts use — one source of truth.
+ */
+export function lineDiagnostics(text: string): LineDiagnostic[] {
+  const out: LineDiagnostic[] = [];
+  const lines = text.split(/\r?\n/);
+  for (let n = 0; n < lines.length; n++) {
+    const line = lines[n].trim();
+    if (!line || isTitle(line)) continue;
+    const ex = parseExerciseLine(line);
+    if (!ex) {
+      out.push({ line: n, kind: 'skipped', message: 'Not a recognized exercise line — it will be skipped.' });
+    } else if (ex.flagged) {
+      out.push({ line: n, kind: 'flagged', message: ex.note ?? 'Parsed with uncertainty — please verify.' });
+    }
+  }
+  return out;
+}
+
 /** Parse a whole pasted log into sessions. Lines that fail are returned in `unparsed`. */
 export function parseWorkoutLog(text: string): ParseResult {
   const sessions: LiftSession[] = [];

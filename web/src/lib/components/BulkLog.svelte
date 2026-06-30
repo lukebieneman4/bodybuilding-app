@@ -3,6 +3,7 @@
   import { toKg, fromKg } from '../data/types';
   import type { WeighIn, CalorieEntry } from '../data/types';
   import { parseBulkLog, summarize, formatBulkLog } from '../data/bulklog';
+  import HighlightTextarea, { type MarkKind } from './HighlightTextarea.svelte';
 
   const units = $derived(store.profile?.units ?? 'lb');
 
@@ -23,6 +24,10 @@
   const stats = $derived(summarize(rows));
   const badLines = $derived(rows.filter((r) => r.bad));
   const canApply = $derived(stats.weighIns > 0 || stats.calorieDays > 0);
+  // underline unreadable lines in place (row index === line index)
+  const marks = $derived(
+    rows.flatMap((r, i) => (r.bad ? [{ line: i, kind: 'error' as MarkKind }] : []))
+  );
 
   function apply(): void {
     const w: WeighIn[] = [];
@@ -44,11 +49,13 @@
 
   <label class="full">
     {hasExisting ? `Your weight log (${units} − calories), one day per line` : `Log (${units} − calories), one day per line`}
-    <textarea
-      rows="8"
+    <HighlightTextarea
+      rows={8}
       bind:value={text}
+      {marks}
+      ariaLabel="weight and calorie log"
       placeholder={'201.2 - 2400\n200.5 - 2400\n200.1 - 2200\nNA - NA\n199.3 - 2600'}
-    ></textarea>
+    />
   </label>
 
   <p class="hint">

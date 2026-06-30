@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseTitle, parseExerciseLine, parseWorkoutLog } from './parser';
+import { parseTitle, parseExerciseLine, parseWorkoutLog, lineDiagnostics } from './parser';
 import type { LiftSet } from './types';
 
 /** Compact view of a set for readable assertions: [limb, load, reps, rir, failure]. */
@@ -147,5 +147,29 @@ describe('parseWorkoutLog — whole paste', () => {
     expect(sessions[1].exercises).toHaveLength(1);
     expect(unparsed).toHaveLength(1);
     expect(unparsed[0].text).toContain('MBSE');
+  });
+});
+
+describe('lineDiagnostics — per-line underline data', () => {
+  it('reports 0-based line indices for skipped and flagged lines, skipping titles/blanks', () => {
+    const text = [
+      'Anterior Brick:', // 0 title — skipped from diagnostics
+      'Pec Deck (5) 308- 11.0', // 1 clean
+      '', // 2 blank
+      'Descriptive MBSE nonsense', // 3 not an exercise → skipped
+      'Uni Side Delt 170- ?bad', // 4 has load+dash but junk tail → flagged
+    ].join('\n');
+    const diag = lineDiagnostics(text);
+    const byLine = new Map(diag.map((d) => [d.line, d.kind]));
+    expect(byLine.get(0)).toBeUndefined();
+    expect(byLine.get(1)).toBeUndefined();
+    expect(byLine.get(2)).toBeUndefined();
+    expect(byLine.get(3)).toBe('skipped');
+    expect(byLine.get(4)).toBe('flagged');
+  });
+
+  it('returns nothing for a clean log', () => {
+    const text = ['Push:', 'Bench 225- 5.2', 'Pec Deck 300- 10.1'].join('\n');
+    expect(lineDiagnostics(text)).toHaveLength(0);
   });
 });

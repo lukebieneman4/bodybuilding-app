@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { parseWorkoutLog } from '../lift/parser';
+  import { parseWorkoutLog, lineDiagnostics } from '../lift/parser';
   import { assignCadenceDates } from '../lift/dates';
   import { SAMPLE_LOG } from '../lift/sample';
   import { store, todayISO } from '../data/store.svelte';
+  import HighlightTextarea, { type MarkKind } from './HighlightTextarea.svelte';
 
   let { ondone }: { ondone?: () => void } = $props();
 
@@ -20,6 +21,10 @@
   );
   const flaggedCount = $derived(
     parsed ? parsed.sessions.reduce((n, s) => n + s.exercises.filter((e) => e.flagged).length, 0) : 0
+  );
+  // line-level underlines: skipped lines red, uncertain-but-parsed lines amber
+  const marks = $derived(
+    lineDiagnostics(text).map((d) => ({ line: d.line, kind: (d.kind === 'skipped' ? 'error' : 'warn') as MarkKind }))
   );
 
   // Cadence-resolved sessions, plus an editable per-session date override list.
@@ -47,11 +52,18 @@
       : 'Paste your workout notes exactly as you log them — one exercise per line, sessions starting with a title line ending in “:”. Nothing is saved until you review the preview and hit Import.'}
   </p>
 
-  <textarea
+  <HighlightTextarea
     bind:value={text}
-    rows="10"
+    {marks}
+    rows={10}
+    ariaLabel="training log"
     placeholder={'Anterior Brick:\nUni Machine Side Delt (5) 170- 10.0\nPec Deck (5, 1) 308- 11.0\n...'}
-  ></textarea>
+  />
+  {#if marks.length}
+    <p class="hint underlinekey">
+      <span class="ul err">underline</span> = skipped · <span class="ul wrn">underline</span> = parsed but verify
+    </p>
+  {/if}
   {#if !text.trim()}
     <button class="ghost sample" onclick={() => (text = SAMPLE_LOG)}>Load my training log</button>
   {/if}
@@ -98,17 +110,16 @@
 </section>
 
 <style>
-  .import textarea {
-    width: 100%;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 12.5px;
-    line-height: 1.5;
-    padding: 12px;
-    border: 1px solid var(--line, #E3DDD0);
-    border-radius: 10px;
-    resize: vertical;
-    box-sizing: border-box;
+  .underlinekey {
+    margin: 6px 0 0;
   }
+  .underlinekey .ul {
+    text-decoration: underline wavy;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 2px;
+  }
+  .underlinekey .ul.err { text-decoration-color: #c0392b; }
+  .underlinekey .ul.wrn { text-decoration-color: #b4690e; }
   .preview {
     margin-top: 14px;
   }
