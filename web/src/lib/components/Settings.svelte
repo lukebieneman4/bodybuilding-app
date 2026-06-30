@@ -19,6 +19,19 @@
 
   <label class="toggle">
     <span class="txt">
+      <b>Progression coach</b>
+      <small>Per-lift "what to do next session" cues when you open a lift. Hide if you progress by feel.</small>
+    </span>
+    <input
+      type="checkbox"
+      role="switch"
+      checked={s.progressionCoach}
+      onchange={(e) => store.setSetting('progressionCoach', e.currentTarget.checked)}
+    />
+  </label>
+
+  <label class="toggle">
+    <span class="txt">
       <b>Track protein</b>
       <small>Log protein in the paste box and see daily adherence vs your target.</small>
     </span>

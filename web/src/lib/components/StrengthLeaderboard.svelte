@@ -1,9 +1,14 @@
 <script lang="ts">
   import type { StrengthSeries } from '../lift/analysis';
   import { mixedScale } from '../lift/analysis';
+  import { progressionCue } from '../lift/progression';
+  import { store } from '../data/store.svelte';
   import StrengthChart from './StrengthChart.svelte';
 
   let { strength }: { strength: StrengthSeries[] } = $props();
+
+  const showProg = $derived(store.settings.progressionCoach);
+  const CUE_COLOR: Record<string, string> = { overload: '#2e7d5b', intensity: '#b4690e', stall: '#c0392b' };
 
   type SortKey = 'progress' | 'rate' | 'sessions';
   let sort = $state<SortKey>('progress');
@@ -93,7 +98,19 @@
           <span class="caret">{open === r.id ? '▾' : '▸'}</span>
         </button>
         {#if open === r.id}
-          <div class="detail"><StrengthChart series={r.s} /></div>
+          <div class="detail">
+            {#if showProg}
+              {@const cue = progressionCue(r.s)}
+              {#if cue}
+                <div class="cue" style="border-color:{CUE_COLOR[cue.kind]}">
+                  <span class="cue-h" style="color:{CUE_COLOR[cue.kind]}">Next session · {cue.headline}</span>
+                  <p>{cue.detail}</p>
+                  <span class="cue-cite">{cue.cite}</span>
+                </div>
+              {/if}
+            {/if}
+            <StrengthChart series={r.s} />
+          </div>
         {/if}
       </li>
     {/each}
@@ -185,4 +202,14 @@
 
   .caret { font-size: 10px; color: var(--sub, #6b7280); }
   .detail { padding: 4px 2px 12px; }
+  .cue {
+    border-left: 3px solid;
+    background: #f8f5ef;
+    border-radius: 0 8px 8px 0;
+    padding: 8px 12px;
+    margin: 2px 0 12px;
+  }
+  .cue-h { font-size: 13px; font-weight: 700; }
+  .cue p { margin: 3px 0 2px; font-size: 12.5px; line-height: 1.45; color: var(--ink, #1f2933); }
+  .cue-cite { font-size: 10.5px; color: var(--sub, #6b7280); font-style: italic; }
 </style>

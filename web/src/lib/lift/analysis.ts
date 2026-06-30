@@ -14,7 +14,7 @@
 import { smooth } from '../core/estimator';
 import { dayDiff } from '../core/analysis';
 import type { LiftSession, LiftSet, Limb } from './types';
-import { estimateE1RM, isHardSet, type Confidence } from './e1rm';
+import { estimateE1RM, isHardSet, effectiveRIR, type Confidence } from './e1rm';
 import {
   musclesFor,
   volumeStatus,
@@ -58,6 +58,12 @@ export interface StrengthPoint {
   confidence: Confidence;
   /** True when the winning set's load was a relative "+N" (over-stack) value. */
   relative: boolean;
+  /** Winning (top) set's load in stack units — for progression cues. */
+  load?: number;
+  /** Winning set's reps. */
+  reps?: number;
+  /** Winning set's effective RIR (failure → 0), or null if unlogged. */
+  rir?: number | null;
 }
 
 interface RawSeries {
@@ -74,14 +80,14 @@ function collect(sessions: LiftSession[]): Map<string, RawSeries> {
   for (const { session, day, date } of withDays(sessions)) {
     for (const ex of session.exercises) {
       // best e1RM per limb within this exercise on this day
-      const best = new Map<string, { e1rm: number; confidence: Confidence; limb: Limb | null; relative: boolean }>();
+      const best = new Map<string, { e1rm: number; confidence: Confidence; limb: Limb | null; relative: boolean; load: number; reps: number; rir: number | null }>();
       for (const set of ex.sets) {
         const e = estimateE1RM(set);
         if (!e) continue;
         const lk = set.limb ?? '';
         const cur = best.get(lk);
         if (!cur || e.value > cur.e1rm)
-          best.set(lk, { e1rm: e.value, confidence: e.confidence, limb: set.limb, relative: set.load.relative });
+          best.set(lk, { e1rm: e.value, confidence: e.confidence, limb: set.limb, relative: set.load.relative, load: set.load.value, reps: set.reps, rir: effectiveRIR(set) });
       }
       for (const [, b] of best) {
         const sk = `${ex.key}|${session.location ?? ''}|${b.limb ?? ''}`;
@@ -90,7 +96,7 @@ function collect(sessions: LiftSession[]): Map<string, RawSeries> {
           series = { key: ex.key, rawName: ex.rawName, location: session.location, limb: b.limb, points: [] };
           out.set(sk, series);
         }
-        series.points.push({ day, date, e1rm: b.e1rm, confidence: b.confidence, relative: b.relative });
+        series.points.push({ day, date, e1rm: b.e1rm, confidence: b.confidence, relative: b.relative, load: b.load, reps: b.reps, rir: b.rir });
       }
     }
   }
