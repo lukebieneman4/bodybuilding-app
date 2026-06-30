@@ -150,6 +150,35 @@ the web tool proves itself in real use (a diet phase). See
   categorical palette + legend, rescaled y) — `StrengthSummaryChart`.
 - ✅ vitest 116/116, svelte-check 0 errors; rendered & inspected (live DOM).
 
+## M10 — UX overhaul (MacroFactor/Cronometer-clean) ✅
+Goal: clean, minimal, mobile-first — surface the few things that matter (volume,
+progressions, coaching, data entry) and tuck the rest away. Render-inspected at
+390px throughout.
+- ✅ **Phase 1 — app shell:** design-token expansion (radii, shadows, semantic
+  colors, blur), sticky compact app bar, fixed bottom tab nav (Diet / Lifts) with
+  iOS safe-area insets; replaced the old top tabs/footer.
+- ✅ **Strength leaderboard** (`StrengthLeaderboard.svelte`): replaced the bunched
+  multi-line summary chart **and** the 79-option `<select>` trend picker with one
+  scannable list — sortable (Progress / Rate / Sessions), direction-colored
+  sparkline per lift, % change + recent %/wk, each row expands inline to the full
+  e1RM trend chart (`StrengthChart` reused). Deleted `StrengthSummaryChart.svelte`
+  (the "hard to read" view); `strengthSummary()` retained in analysis.ts.
+- ✅ **Paste-box inline error underlines** (`HighlightTextarea.svelte`,
+  highlight-overlay technique): lift log underlines skipped lines red / uncertain
+  amber via new `parser.lineDiagnostics()`; diet log underlines unreadable lines.
+  Both boxes monospace so columns align. +2 parser tests.
+- ✅ **Coach prioritization:** count summary line + top-3 severity-ranked to-dos,
+  rest behind "Show N more"; strength-watch capped at 2. Split front-delt "fed
+  indirectly" out of the in-zone count so it matches the stat strip.
+- ✅ **Dashboard stat strips** (`StatStrip.svelte`): Diet = Trend · Rate (colored
+  by on-track status) · Maintenance; Lifts = Sessions · Lifts · In-zone (X/Y).
+- ✅ **Lift-view IA:** lead with the coach, demoted the training-density bar into
+  the volume card (where it drives the numbers), made Left/Right symmetry a
+  collapsible card with an always-visible "worst N% · X/Y below goal" summary;
+  lighter strength-chart gridlines.
+- ✅ vitest 120/120, svelte-check 0 errors, production build clean; rendered &
+  inspected at phone width (Playwright) for every piece.
+
 ## Stretch
 - ⬜ AI coach (Claude API, free-form Q&A) — **rule-based coach now shipped (M9)**;
   Claude API layer over the structured data + rule engine is the remaining piece
@@ -164,7 +193,7 @@ the web tool proves itself in real use (a diet phase). See
   arbitrary file read, **Windows-only, dev-server-only** (GHSA-g7r4-m6w7-qqqr),
   a vite transitive dep that never ships in the production build. Its only fix is
   a breaking `npm audit fix --force` major bump; not worth the toolchain risk.
-- ⬜ Silence 6 benign svelte-check warnings (intake form one-time prefill)
+- ⬜ Silence the 1 remaining benign svelte-check warning (intake form one-time prefill)
 - ⬜ Swift `CoreCheck` can't build in this environment: the Command Line Tools
   SDK fails to build `Foundation` (`'CarbonCore/Folders.h' file not found` →
   `could not build module 'CoreServices'`). Pre-existing toolchain breakage,
