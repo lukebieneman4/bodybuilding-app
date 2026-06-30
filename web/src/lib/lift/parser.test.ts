@@ -172,4 +172,16 @@ describe('lineDiagnostics — per-line underline data', () => {
     const text = ['Push:', 'Bench 225- 5.2', 'Pec Deck 300- 10.1'].join('\n');
     expect(lineDiagnostics(text)).toHaveLength(0);
   });
+
+  it('flags a Uni lift logged without an L/R split, but not one with a split', () => {
+    const text = [
+      'Lower:',
+      'Uni Leg Ext 200- 8.1, 8.0', // unilateral, no split → flagged
+      'Uni Leg Press 200/200- 8.1/8.0', // unilateral, split → fine
+      'Pec Deck 300- 8.0', // bilateral → fine
+    ].join('\n');
+    const diag = lineDiagnostics(text);
+    expect(diag).toHaveLength(1);
+    expect(diag[0]).toMatchObject({ line: 1, kind: 'unilateral' });
+  });
 });

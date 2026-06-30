@@ -6,7 +6,9 @@
    * textarea while the mirror's decorations show through, perfectly aligned.
    * Marks are line-based (0-based), matching how our parsers report problems.
    */
-  export type MarkKind = 'error' | 'warn';
+  // error = red wavy (skipped); warn = amber wavy (verify); note = amber dotted
+  // (a soft data-quality nudge, e.g. a Uni lift missing its L/R split).
+  export type MarkKind = 'error' | 'warn' | 'note';
 
   let {
     value = $bindable(''),
@@ -47,7 +49,8 @@
   <div class="backdrop" bind:this={backdrop} aria-hidden="true">
     <div class="mirror">{#each lines as ln, i}<span
           class:error={kindByLine.get(i) === 'error'}
-          class:warn={kindByLine.get(i) === 'warn'}>{ln || ' '}</span>{#if i < lines.length - 1}{'\n'}{/if}{/each}</div>
+          class:warn={kindByLine.get(i) === 'warn'}
+          class:note={kindByLine.get(i) === 'note'}>{ln || ' '}</span>{#if i < lines.length - 1}{'\n'}{/if}{/each}</div>
   </div>
   <textarea
     bind:this={ta}
@@ -105,6 +108,11 @@
     text-decoration: underline wavy #b4690e;
     text-decoration-thickness: 1.5px;
     text-underline-offset: 2px;
+  }
+  .mirror span.note {
+    text-decoration: underline dotted #d3a45e;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
   }
 
   .htx textarea {

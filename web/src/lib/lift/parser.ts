@@ -273,16 +273,20 @@ export function parseExerciseLine(raw: string): LoggedExercise | null {
 export interface LineDiagnostic {
   /** 0-based index into text.split(/\r?\n/). */
   line: number;
-  /** 'skipped' = not a recognized exercise line; 'flagged' = parsed but uncertain. */
-  kind: 'skipped' | 'flagged';
+  /**
+   * 'skipped' = not a recognized exercise line; 'flagged' = parsed but uncertain;
+   * 'unilateral' = a "Uni" lift logged without an L/R split (asymmetry not tracked).
+   */
+  kind: 'skipped' | 'flagged' | 'unilateral';
   message: string;
 }
 
 /**
  * Line-level diagnostics for the import textarea, mirroring parseWorkoutLog's
  * line walk: a non-blank, non-title line is 'skipped' when it isn't an exercise,
- * or 'flagged' when it parses with uncertainty (so the UI can underline it in
- * place). Same classification the preview's counts use — one source of truth.
+ * 'flagged' when it parses with uncertainty, or 'unilateral' when a "Uni" lift was
+ * logged without a left/right split (so the L/R asymmetry can't be tracked for it).
+ * The UI underlines each in place. Same classification the preview's counts use.
  */
 export function lineDiagnostics(text: string): LineDiagnostic[] {
   const out: LineDiagnostic[] = [];
@@ -295,6 +299,12 @@ export function lineDiagnostics(text: string): LineDiagnostic[] {
       out.push({ line: n, kind: 'skipped', message: 'Not a recognized exercise line — it will be skipped.' });
     } else if (ex.flagged) {
       out.push({ line: n, kind: 'flagged', message: ex.note ?? 'Parsed with uncertainty — please verify.' });
+    } else if (ex.modifiers.includes('uni') && ex.sets.length > 0 && ex.sets.every((s) => s.limb == null)) {
+      out.push({
+        line: n,
+        kind: 'unilateral',
+        message: 'Unilateral lift without a left/right split — log e.g. "100/100- 8/7" to track left vs right.',
+      });
     }
   }
   return out;

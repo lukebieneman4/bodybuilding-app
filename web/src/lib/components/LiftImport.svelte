@@ -22,10 +22,12 @@
   const flaggedCount = $derived(
     parsed ? parsed.sessions.reduce((n, s) => n + s.exercises.filter((e) => e.flagged).length, 0) : 0
   );
-  // line-level underlines: skipped lines red, uncertain-but-parsed lines amber
-  const marks = $derived(
-    lineDiagnostics(text).map((d) => ({ line: d.line, kind: (d.kind === 'skipped' ? 'error' : 'warn') as MarkKind }))
-  );
+  // line-level underlines: skipped = red wavy, parse-uncertainty = amber wavy,
+  // Uni-missing-split = amber dotted (a softer data-quality nudge).
+  const DIAG_KIND: Record<string, MarkKind> = { skipped: 'error', flagged: 'warn', unilateral: 'note' };
+  const diags = $derived(lineDiagnostics(text));
+  const marks = $derived(diags.map((d) => ({ line: d.line, kind: DIAG_KIND[d.kind] })));
+  const uniUnsplit = $derived(diags.filter((d) => d.kind === 'unilateral').length);
 
   // Cadence-resolved sessions, plus an editable per-session date override list.
   // `dates` re-seeds whenever the cadence result changes (text / anchor edits);
@@ -61,7 +63,7 @@
   />
   {#if marks.length}
     <p class="hint underlinekey">
-      <span class="ul err">underline</span> = skipped · <span class="ul wrn">underline</span> = parsed but verify
+      <span class="ul err">skipped</span> · <span class="ul wrn">verify</span> · <span class="ul note">missing L/R split</span>
     </p>
   {/if}
   {#if !text.trim()}
@@ -96,6 +98,12 @@
       {#if parsed.unparsed.length}
         <p class="hint skipped">Skipped (not a recognized exercise line): {parsed.unparsed.map((u) => u.text).join(' · ')}</p>
       {/if}
+      {#if uniUnsplit > 0}
+        <p class="hint skipped">
+          {uniUnsplit} unilateral {uniUnsplit === 1 ? 'lift' : 'lifts'} logged without an L/R split — left/right
+          isn't tracked for {uniUnsplit === 1 ? 'it' : 'these'} (volume is unaffected). Log e.g. <code>100/100- 8/7</code>.
+        </p>
+      {/if}
 
       <div class="row">
         <label>Most recent session<input type="date" bind:value={endDate} /></label>
@@ -120,6 +128,11 @@
   }
   .underlinekey .ul.err { text-decoration-color: #c0392b; }
   .underlinekey .ul.wrn { text-decoration-color: #b4690e; }
+  .underlinekey .ul.note {
+    text-decoration-style: dotted;
+    text-decoration-thickness: 1px;
+    text-decoration-color: #d3a45e;
+  }
   .preview {
     margin-top: 14px;
   }
