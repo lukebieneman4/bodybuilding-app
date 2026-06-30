@@ -199,6 +199,25 @@ progressions, coaching, data entry) and tuck the rest away. Render-inspected at
   (`store.liftPriorities`, null = auto). New `PriorityMuscles` editor in the coach.
 - ✅ vitest 131/131, svelte-check 0 errors, build clean; render-inspected at 390px.
 
+## M12 — Toggleable coaching: nutrition + progression ✅
+Strategic push toward "tell me what to do next," with every layer behind a toggle
+(`store.settings`, merged with defaults; Preferences panel in the Profile screen).
+- ✅ **Protein** (toggle): optional 3rd paste-log field `weight - calories -
+  protein`; cited target (`core/protein.ts`) — bodyweight basis 1.6–2.2 g/kg
+  (Morton 2018; Iraki 2019) or fat-free-mass basis 2.3–3.1 g/kg (Helms 2014) when
+  a body-fat % is given; adherence vs target.
+- ✅ **Full macros** (`core/macros.ts`): science-based split (protein first; fat
+  g/kg floored at 20% kcal for hormones — Iraki 2019, Whittaker 2021; carbs fill
+  the remainder of a goal-driven calorie target), or a custom P/C/F override.
+  MacrosCard shows the calorie-proportional split + protein adherence.
+- ✅ **Progression coach** (toggle): per-lift next-session cue in the leaderboard —
+  push-to-failure / "beat NxR" (double progression) / stall detection. Cited
+  (Schoenfeld, Helms; SCIENCE.md §1–2). StrengthPoint now carries the top set's
+  load/reps/RIR.
+- ✅ vitest 149/149, svelte-check 0 errors, build clean; render-inspected at 390px.
+- ⬜ **Next:** deload + cross-domain insights (link diet ↔ training); AI coach
+  (needs an API-key/backend decision — see Stretch).
+
 ## Stretch
 - ⬜ AI coach (Claude API, free-form Q&A) — **rule-based coach now shipped (M9)**;
   Claude API layer over the structured data + rule engine is the remaining piece
