@@ -49,15 +49,15 @@
             <li>
               <span class="ex">{c.rawName}</span>
               <span class="calc">
-                {c.hardSets} {c.hardSets === 1 ? 'set' : 'sets'} × {c.creditPerSet}
-                <span class="role">{c.role === 'secondary' ? 'secondary' : 'primary'}</span>
+                {c.hardSets} hard {c.hardSets === 1 ? 'set' : 'sets'}
+                <span class="role">{c.role === 'secondary' ? 'secondary ×0.5' : 'primary'}</span>
               </span>
               <span class="sub">{c.setsPerWeek.toFixed(1)}/wk</span>
             </li>
           {/each}
           <li class="sum">
-            <span class="ex">this week</span>
-            <span class="calc"></span>
+            <span class="ex">per week</span>
+            <span class="calc">recent average × your density</span>
             <span class="sub">{v.setsPerWeek.toFixed(1)}/wk</span>
           </li>
         </ul>

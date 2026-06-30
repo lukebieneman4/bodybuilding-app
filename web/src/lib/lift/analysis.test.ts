@@ -4,6 +4,7 @@ import {
   strengthSeries,
   strengthSummary,
   weeklyVolumeByMuscle,
+  impliedSessionsPerWeek,
   limbAsymmetry,
   interpAt,
   mixedScale,
@@ -56,7 +57,8 @@ describe('weeklyVolumeByMuscle — fractional credit, per-limb (SCIENCE.md §4)'
         'Uni Leg Ext 200/0- 10.0/0.0', // L quads (1); R skipped (reps 0)
       ]),
     ];
-    const vol = weeklyVolumeByMuscle(sessions);
+    // 1 session at 1 session/week → weekly volume = that session's credited sets
+    const vol = weeklyVolumeByMuscle(sessions, { sessionsPerWeek: 1 });
     const byMuscle = Object.fromEntries(vol.map((v) => [v.muscle, v.setsPerWeek]));
     expect(byMuscle.quads).toBeCloseTo(3, 5); // 2 (leg press L/R) + 1 (leg ext L)
     expect(byMuscle.glutes).toBeCloseTo(1, 5); // leg press secondary, 0.5 × 2 limbs
@@ -68,6 +70,34 @@ describe('weeklyVolumeByMuscle — fractional credit, per-limb (SCIENCE.md §4)'
       ['Uni Leg Press', 'primary', 2, 2],
       ['Uni Leg Ext', 'primary', 1, 1],
     ]);
+  });
+
+  it('derives per-muscle frequency from the log: split muscles get fractional frequency', () => {
+    // A/B split: chest only on "A" days, lats only on "B" days, 1 hard set each.
+    const sessions = [
+      session('2026-03-01', 'Gym', ['Pec Deck 300- 8.0']), // A: chest
+      session('2026-03-02', 'Gym', ['Machine Lat Row 200- 8.0']), // B: lats
+      session('2026-03-03', 'Gym', ['Pec Deck 300- 8.0']), // A
+      session('2026-03-04', 'Gym', ['Machine Lat Row 200- 8.0']), // B
+    ];
+    // 4 sessions/week, each muscle trained 2 of 4 → 0.5/session × 4 = 2/week
+    const vol = weeklyVolumeByMuscle(sessions, { sessionsPerWeek: 4 });
+    const byMuscle = Object.fromEntries(vol.map((v) => [v.muscle, v.setsPerWeek]));
+    expect(byMuscle.chest).toBeCloseTo(2, 5);
+    expect(byMuscle.lats).toBeCloseTo(2, 5);
+    // doubling the density doubles the weekly volume (same log, faster cadence)
+    const fast = weeklyVolumeByMuscle(sessions, { sessionsPerWeek: 8 });
+    expect(Object.fromEntries(fast.map((v) => [v.muscle, v.setsPerWeek])).chest).toBeCloseTo(4, 5);
+  });
+
+  it('impliedSessionsPerWeek reflects the cadence spacing (every-other-day ≈ 3.5)', () => {
+    const s = [
+      session('2026-03-01', 'Gym', ['Pec Deck 300- 8.0']),
+      session('2026-03-03', 'Gym', ['Pec Deck 300- 8.0']),
+      session('2026-03-05', 'Gym', ['Pec Deck 300- 8.0']),
+      session('2026-03-07', 'Gym', ['Pec Deck 300- 8.0']),
+    ];
+    expect(impliedSessionsPerWeek(s)).toBe(3.5);
   });
 });
 

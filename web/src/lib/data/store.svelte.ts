@@ -14,10 +14,12 @@ interface Persisted {
   liftLog: string;
   /** Anchor date for the most recent session (ISO) when (re)deriving sessions from liftLog. */
   liftLogEndDate: string;
+  /** User-declared training density (sessions/week); null = auto-derive from the log. */
+  liftSessionsPerWeek: number | null;
 }
 
 function load(): Persisted {
-  const empty: Persisted = { profile: null, weighIns: [], calories: [], liftSessions: [], liftLog: '', liftLogEndDate: '' };
+  const empty: Persisted = { profile: null, weighIns: [], calories: [], liftSessions: [], liftLog: '', liftLogEndDate: '', liftSessionsPerWeek: null };
   if (typeof localStorage === 'undefined') return empty;
   try {
     const raw = localStorage.getItem(KEY);
@@ -71,6 +73,14 @@ export const store = {
   get liftLogEndDate(): string {
     return data.liftLogEndDate;
   },
+  get liftSessionsPerWeek(): number | null {
+    return data.liftSessionsPerWeek;
+  },
+  /** Set training density (sessions/week), or null to auto-derive from the log. */
+  setLiftSessionsPerWeek(spw: number | null): void {
+    data.liftSessionsPerWeek = spw;
+    persist();
+  },
   setLiftSessions(sessions: LiftSession[]): void {
     data.liftSessions = [...sessions].sort((a, b) => (a.date ?? '').localeCompare(b.date ?? ''));
     persist();
@@ -86,6 +96,7 @@ export const store = {
     data.liftSessions = [];
     data.liftLog = '';
     data.liftLogEndDate = '';
+    data.liftSessionsPerWeek = null;
     persist();
   },
   importWeighIns(list: WeighIn[]): void {

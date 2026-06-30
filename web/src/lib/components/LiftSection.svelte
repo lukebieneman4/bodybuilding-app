@@ -1,8 +1,9 @@
 <script lang="ts">
   import { store } from '../data/store.svelte';
-  import { analyzeLifts } from '../lift/analysis';
+  import { analyzeLifts, impliedSessionsPerWeek } from '../lift/analysis';
   import { volumeAdvice, regressingLifts } from '../lift/advice';
   import LiftImport from './LiftImport.svelte';
+  import TrainingDensity from './TrainingDensity.svelte';
   import VolumeCoach from './VolumeCoach.svelte';
   import StrengthChart from './StrengthChart.svelte';
   import StrengthSummaryChart from './StrengthSummaryChart.svelte';
@@ -12,9 +13,11 @@
   let reimport = $state(false);
 
   const sessions = $derived(store.liftSessions);
-  // surgical side defaults to right (per the user's log); volume = the current
-  // training week (last 7 days, ending at the most recent session = today).
-  const analysis = $derived(sessions.length ? analyzeLifts(sessions, { surgicalSide: 'R', windowDays: 7 }) : null);
+  // Training density (sessions/week) drives weekly volume: the user can declare it,
+  // else we infer it from the log's cadence. surgical side defaults to right.
+  const implied = $derived(impliedSessionsPerWeek(sessions));
+  const spw = $derived(store.liftSessionsPerWeek ?? implied);
+  const analysis = $derived(sessions.length ? analyzeLifts(sessions, { surgicalSide: 'R', sessionsPerWeek: spw }) : null);
   // Volume Coach: knee-crossing muscles get rehab-aware (conservative) advice
   // per SCIENCE.md §5 while the ACL graft remodels.
   const advice = $derived(analysis ? volumeAdvice(analysis.volume, { rehabMuscles: ['quads', 'hamstrings', 'calves'] }) : []);
@@ -42,6 +45,8 @@
   <LiftImport ondone={() => (reimport = false)} />
   {#if reimport}<button class="ghost center" onclick={() => (reimport = false)}>Cancel</button>{/if}
 {:else if analysis}
+  <TrainingDensity {implied} />
+
   {#if advice.length || flags.length}
     <VolumeCoach actions={advice} {flags} />
   {/if}
@@ -76,7 +81,7 @@
   <section class="card">
     <div class="cardhead">
       <h2>Weekly volume per muscle</h2>
-      <span class="hint">hard sets/week (RIR ≤ 3) vs evidence-based landmarks · this week</span>
+      <span class="hint">hard sets/week (RIR ≤ 3) vs evidence-based landmarks · at your training density</span>
     </div>
     <VolumeChart volume={analysis.volume} />
   </section>

@@ -282,21 +282,54 @@ export interface MuscleVolume {
 }
 
 export interface VolumeOptions {
-  /** Trailing window ending at the last session, in days (default 7). */
-  windowDays?: number;
+  /**
+   * Training density — sessions per week (fractional ok; FBEOD ≈ 3.5). This is
+   * the ONE thing the undated log can't know; everything else (which muscles,
+   * how often, how many sets) is read from the log. Defaults to a value implied
+   * by the session calendar when omitted.
+   */
+  sessionsPerWeek?: number;
+  /**
+   * Averaging span in weeks. The per-muscle average is taken over the last
+   * `round(windowWeeks × sessionsPerWeek)` sessions — a whole number of weeks,
+   * i.e. whole rotations for a synchronous weekly split — so a muscle trained on
+   * only some days gets its true fractional frequency, not a window artifact
+   * (default 2).
+   */
+  windowWeeks?: number;
 }
 
 /**
- * Weekly hard-set credits per muscle over the trailing window, with landmark
- * status. Unilateral sets count per worked limb (a `225/90` leg press = 2 quad
- * credits); zero-rep surgical-side sets credit nothing (SCIENCE.md §4).
+ * Sessions/week implied by the (cadence-dated) calendar — a reasonable default
+ * until the user declares their real training density. Uses the dated span so
+ * it reflects the cadence guesser's spacing (e.g. FBEOD ≈ 3.5).
+ */
+export function impliedSessionsPerWeek(sessions: LiftSession[]): number {
+  const dated = withDays(sessions);
+  if (dated.length < 2) return 3.5;
+  const span = dated[dated.length - 1].day - dated[0].day;
+  if (span <= 0) return 3.5;
+  return Math.round(((dated.length - 1) / span) * 7 * 2) / 2; // nearest 0.5
+}
+
+/**
+ * Weekly hard-set credits per muscle, with landmark status. Computed as each
+ * muscle's AVERAGE credited hard sets per session (over the last whole-week(s)
+ * of sessions) × the weekly session frequency — so it's correct for any split,
+ * synchronous or asynchronous, and per-muscle frequency (a muscle hit 2 of every
+ * 5 sessions counts 2/5 × frequency) falls out of the log automatically. This
+ * replaces counting sessions inside a fixed day-window, which over/under-counted
+ * frequency whenever the cadence period didn't divide 7 evenly. Unilateral sets
+ * count per worked limb; zero-rep surgical-side sets credit nothing (SCIENCE.md §4).
  */
 export function weeklyVolumeByMuscle(sessions: LiftSession[], opts: VolumeOptions = {}): MuscleVolume[] {
-  const windowDays = opts.windowDays ?? 7;
   const dated = withDays(sessions);
   if (dated.length === 0) return [];
-  const lastDay = Math.max(...dated.map((d) => d.day));
-  const cutoff = lastDay - windowDays;
+  const spw = opts.sessionsPerWeek ?? impliedSessionsPerWeek(sessions);
+  const windowWeeks = opts.windowWeeks ?? 2;
+  // average over the last whole-week(s) of sessions (≈ whole rotations)
+  const k = Math.min(dated.length, Math.max(1, Math.round(windowWeeks * spw)));
+  const recent = dated.slice(-k);
 
   // accumulate hard-set counts per muscle, keyed by exercise (merged across gyms)
   interface Acc {
@@ -313,8 +346,7 @@ export function weeklyVolumeByMuscle(sessions: LiftSession[], opts: VolumeOption
     if (cur) cur.hardSets += n;
     else mm.set(exKey, { rawName, role, creditPerSet, hardSets: n });
   };
-  for (const { session, day } of dated) {
-    if (day <= cutoff) continue;
+  for (const { session } of recent) {
     for (const ex of session.exercises) {
       const att = musclesFor(ex.key);
       if (!att) continue;
@@ -325,7 +357,8 @@ export function weeklyVolumeByMuscle(sessions: LiftSession[], opts: VolumeOption
     }
   }
 
-  const perWeek = windowDays / 7;
+  // weekly = (credited sets over the window ÷ sessions in window) × sessions/week
+  const scale = spw / k;
   const out: MuscleVolume[] = [];
   for (const [muscle, mm] of byMuscle) {
     const contributions: VolumeContribution[] = [...mm.values()]
@@ -334,7 +367,7 @@ export function weeklyVolumeByMuscle(sessions: LiftSession[], opts: VolumeOption
         role: a.role,
         creditPerSet: a.creditPerSet,
         hardSets: a.hardSets,
-        setsPerWeek: (a.creditPerSet * a.hardSets) / perWeek,
+        setsPerWeek: a.creditPerSet * a.hardSets * scale,
       }))
       .sort((x, y) => y.setsPerWeek - x.setsPerWeek);
     const setsPerWeek = contributions.reduce((s, c) => s + c.setsPerWeek, 0);

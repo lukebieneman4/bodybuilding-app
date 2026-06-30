@@ -14,7 +14,7 @@ describe('real ACL training log — end to end', () => {
   it('parses and analyzes without losing data', () => {
     const { sessions, unparsed } = parseWorkoutLog(SAMPLE_LOG);
     const dated = assignCadenceDates(sessions, '2026-01-01');
-    const { strength, volume, asymmetry } = analyzeLifts(dated, { surgicalSide: 'R', windowDays: 14 });
+    const { strength, volume, asymmetry } = analyzeLifts(dated, { surgicalSide: 'R' });
 
     const flagged = sessions.flatMap((s) => s.exercises).filter((e) => e.flagged);
     const totalExercises = sessions.reduce((n, s) => n + s.exercises.length, 0);
