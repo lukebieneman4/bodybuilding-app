@@ -13,7 +13,8 @@
  *         tolerates → no aggressive "add N sets" for rehab muscles; defer to physio.
  */
 
-import type { MuscleVolume } from './analysis';
+import type { MuscleVolume, StrengthSeries } from './analysis';
+import { mixedScale } from './analysis';
 import type { Muscle, VolumeStatus } from './muscles';
 
 export type ActionKind = 'add' | 'grow' | 'hold' | 'watch' | 'reduce';
@@ -141,3 +142,49 @@ export function volumeAdvice(volume: MuscleVolume[], opts: AdviceOptions = {}): 
 /** The action kinds that are real to-dos (vs status lines). */
 export const TODO_KINDS: ActionKind[] = ['add', 'grow', 'reduce'];
 export const isTodo = (a: VolumeAction): boolean => TODO_KINDS.includes(a.kind);
+
+// ---- strength regression watch ---------------------------------------------
+
+export interface StrengthFlag {
+  /** Display name incl. limb/location, e.g. "Pec Deck · Ash". */
+  name: string;
+  /** Smoothed e1RM change as % of the current index per week (negative = down). */
+  pctPerWeek: number;
+  detail: string;
+  cite: string;
+}
+
+export interface RegressionOptions {
+  /** Flag when the e1RM trend falls faster than this (%/week, negative). */
+  pctPerWeekThreshold?: number;
+  /** Minimum e1RM points before a trend is trusted. */
+  minPoints?: number;
+}
+
+/**
+ * Lifts whose SMOOTHED e1RM trend is sliding down — a coaching watch-list. Uses
+ * the shared Kalman slope (SCIENCE.md §1), expressed as %/week of the current
+ * index so machines with different stack units are comparable. Needs a few
+ * sessions to trust the trend; skips mixed relative/absolute-load series (not
+ * self-comparable). The −1%/wk default is a heuristic, framed informationally —
+ * a real dip has many benign causes (fatigue, setup, a hard week).
+ */
+export function regressingLifts(strength: StrengthSeries[], opts: RegressionOptions = {}): StrengthFlag[] {
+  const thresh = opts.pctPerWeekThreshold ?? -1;
+  const minPoints = opts.minPoints ?? 4;
+  const flags: StrengthFlag[] = [];
+  for (const s of strength) {
+    if (s.points.length < minPoints || s.current <= 0 || mixedScale(s.points)) continue;
+    const pctPerWeek = (s.slopePerWeek / s.current) * 100;
+    if (pctPerWeek > thresh) continue;
+    const name = `${s.rawName}${s.limb ? ' (' + (s.limb === 'R' ? 'right' : 'left') + ')' : ''}${s.location ? ' · ' + s.location : ''}`;
+    flags.push({
+      name,
+      pctPerWeek,
+      detail: `Trending down ~${Math.abs(pctPerWeek).toFixed(0)}%/wk — often fatigue, a form/setup change, or a hard stretch. If it keeps sliding, take a lighter week and check sleep & recovery.`,
+      cite: 'e1RM trend (SCIENCE.md §1) · informational',
+    });
+  }
+  flags.sort((a, b) => a.pctPerWeek - b.pctPerWeek); // steepest decline first
+  return flags;
+}

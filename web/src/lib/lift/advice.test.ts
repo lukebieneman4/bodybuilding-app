@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { volumeAdvice, isTodo } from './advice';
+import { volumeAdvice, isTodo, regressingLifts } from './advice';
 import { LANDMARKS, volumeStatus, type Muscle } from './muscles';
-import type { MuscleVolume } from './analysis';
+import type { MuscleVolume, StrengthSeries, StrengthPoint } from './analysis';
 
 /** Build a realistic MuscleVolume using the real landmarks + classifier. */
 function mv(muscle: Muscle, setsPerWeek: number): MuscleVolume {
@@ -88,5 +88,50 @@ describe('volumeAdvice', () => {
     expect(actions[0].muscle).toBe('side_delt'); // severity 100
     expect(actions[1].muscle).toBe('biceps'); // severity 85
     expect(actions[2].muscle).toBe('chest'); // severity 10
+  });
+});
+
+/** Minimal StrengthSeries with the fields regressingLifts reads. */
+function series(over: Partial<StrengthSeries>, n = 5): StrengthSeries {
+  const points: StrengthPoint[] = Array.from({ length: n }, (_, i) => ({
+    day: i, date: null, e1rm: 100, confidence: 'high', relative: false,
+  }));
+  return {
+    key: 'k', rawName: 'Test Lift', location: null, limb: null,
+    points, trend: [], band: [], current: 100, slopePerWeek: 0, ...over,
+  };
+}
+
+describe('regressingLifts', () => {
+  it('flags a lift sliding faster than -1%/wk of its index', () => {
+    const flags = regressingLifts([series({ rawName: 'Pec Deck', current: 100, slopePerWeek: -2 })]);
+    expect(flags).toHaveLength(1);
+    expect(flags[0].name).toBe('Pec Deck');
+    expect(flags[0].pctPerWeek).toBe(-2);
+    expect(flags[0].detail).toMatch(/Trending down ~2%\/wk/);
+  });
+
+  it('does not flag a near-flat or rising trend', () => {
+    expect(regressingLifts([series({ slopePerWeek: -0.5 })])).toEqual([]); // -0.5%/wk > -1
+    expect(regressingLifts([series({ slopePerWeek: 1.5 })])).toEqual([]);
+  });
+
+  it('ignores series with too few sessions to trust', () => {
+    expect(regressingLifts([series({ slopePerWeek: -5 }, 3)])).toEqual([]);
+  });
+
+  it('skips mixed relative/absolute-load series (not self-comparable)', () => {
+    const s = series({ slopePerWeek: -5 });
+    s.points[0].relative = true; // mixes +N and absolute → mixedScale true
+    expect(regressingLifts([s])).toEqual([]);
+  });
+
+  it('includes limb + location in the name and ranks steepest decline first', () => {
+    const flags = regressingLifts([
+      series({ rawName: 'Curl', slopePerWeek: -1.5 }),
+      series({ rawName: 'Uni Leg Ext', limb: 'R', location: 'Ash', slopePerWeek: -4 }),
+    ]);
+    expect(flags[0].name).toBe('Uni Leg Ext (right) · Ash'); // steeper
+    expect(flags[1].name).toBe('Curl');
   });
 });

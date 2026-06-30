@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { VolumeAction } from '../lift/advice';
+  import type { VolumeAction, StrengthFlag } from '../lift/advice';
   import { isTodo } from '../lift/advice';
 
-  let { actions }: { actions: VolumeAction[] } = $props();
+  let { actions, flags = [] }: { actions: VolumeAction[]; flags?: StrengthFlag[] } = $props();
 
   const KIND_COLOR: Record<string, string> = {
     add: '#B4690E',
@@ -20,7 +20,7 @@
 
 <section class="card coach">
   <div class="cardhead">
-    <h2>This week — volume coach</h2>
+    <h2>This week — coach</h2>
     <span class="hint">what to adjust next week · zones are coach landmarks (±2 sets), not exact prescriptions</span>
   </div>
 
@@ -49,6 +49,24 @@
       {#if watches.length}
         <span class="line"><b style="color:{KIND_COLOR.watch}">Near ceiling</b> {watches.map((w) => name(w.muscle)).join(', ')}</span>
       {/if}
+    </div>
+  {/if}
+
+  {#if flags.length}
+    <div class="watch">
+      <h3 class="subhead">Strength watch — lifts trending down</h3>
+      <ul class="todos">
+        {#each flags as f (f.name)}
+          <li>
+            <span class="chip" style="background:#C0392B">▼ {Math.abs(Math.round(f.pctPerWeek))}%/wk</span>
+            <div class="body">
+              <strong style="text-transform:none">{f.name}</strong>
+              <p>{f.detail}</p>
+              <span class="cite">{f.cite}</span>
+            </div>
+          </li>
+        {/each}
+      </ul>
     </div>
   {/if}
 </section>
@@ -115,5 +133,16 @@
     font-weight: 600;
     margin-right: 6px;
     text-transform: none;
+  }
+  .watch {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #f0ece3;
+  }
+  .subhead {
+    margin: 0 0 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #c0392b;
   }
 </style>

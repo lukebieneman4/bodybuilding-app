@@ -1,7 +1,7 @@
 <script lang="ts">
   import { store } from '../data/store.svelte';
   import { analyzeLifts } from '../lift/analysis';
-  import { volumeAdvice } from '../lift/advice';
+  import { volumeAdvice, regressingLifts } from '../lift/advice';
   import LiftImport from './LiftImport.svelte';
   import VolumeCoach from './VolumeCoach.svelte';
   import StrengthChart from './StrengthChart.svelte';
@@ -18,6 +18,7 @@
   // Volume Coach: knee-crossing muscles get rehab-aware (conservative) advice
   // per SCIENCE.md §5 while the ACL graft remodels.
   const advice = $derived(analysis ? volumeAdvice(analysis.volume, { rehabMuscles: ['quads', 'hamstrings', 'calves'] }) : []);
+  const flags = $derived(analysis ? regressingLifts(analysis.strength) : []);
 
   // strength series worth charting (≥2 points), most-logged first
   const series = $derived(
@@ -41,8 +42,8 @@
   <LiftImport ondone={() => (reimport = false)} />
   {#if reimport}<button class="ghost center" onclick={() => (reimport = false)}>Cancel</button>{/if}
 {:else if analysis}
-  {#if advice.length}
-    <VolumeCoach actions={advice} />
+  {#if advice.length || flags.length}
+    <VolumeCoach actions={advice} {flags} />
   {/if}
 
   {#if analysis.summary.byMuscle.length || analysis.summary.byExercise.length}
