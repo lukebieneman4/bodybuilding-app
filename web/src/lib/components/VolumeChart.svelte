@@ -2,10 +2,17 @@
   import type { MuscleVolume } from '../lift/analysis';
   import type { VolumeStatus } from '../lift/muscles';
 
-  let { volume }: { volume: MuscleVolume[] } = $props();
+  let { volume, window = { sessions: 0, weeks: 1 } }:
+    { volume: MuscleVolume[]; window?: { sessions: number; weeks: number } } = $props();
 
   const SCALE_MAX = 30; // covers the largest MRV (traps ~30 sets/wk)
   const pct = (v: number): number => Math.min(100, (v / SCALE_MAX) * 100);
+
+  // show the math behind each row: (sets per session) × (sessions per week)
+  const r1 = (n: number): number => Math.round(n * 10) / 10;
+  const perSession = (hardSets: number, sessions: number): number => (sessions ? r1(hardSets / sessions) : 0);
+  const perWeekFreq = (sessions: number): number => (window.weeks ? r1(sessions / window.weeks) : 0);
+  const setWord = (n: number): string => (n === 1 ? 'set' : 'sets');
 
   const STATUS: Record<VolumeStatus, { color: string; label: string }> = {
     below_mev: { color: '#B4690E', label: 'below MEV' },
@@ -49,15 +56,15 @@
             <li>
               <span class="ex">{c.rawName}</span>
               <span class="calc">
-                {c.hardSets} hard {c.hardSets === 1 ? 'set' : 'sets'}
-                <span class="role">{c.role === 'secondary' ? 'secondary ×0.5' : 'primary'}</span>
+                {perSession(c.hardSets, c.sessions)} {setWord(perSession(c.hardSets, c.sessions))} × {perWeekFreq(c.sessions)}/wk
+                {#if c.role === 'secondary'}<span class="role">×0.5</span>{/if}
               </span>
               <span class="sub">{c.setsPerWeek.toFixed(1)}/wk</span>
             </li>
           {/each}
           <li class="sum">
             <span class="ex">per week</span>
-            <span class="calc">recent average × your density</span>
+            <span class="calc">over last {window.sessions} sessions ≈ {r1(window.weeks)} wk</span>
             <span class="sub">{v.setsPerWeek.toFixed(1)}/wk</span>
           </li>
         </ul>

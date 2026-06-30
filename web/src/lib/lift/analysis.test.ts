@@ -4,6 +4,7 @@ import {
   strengthSeries,
   strengthSummary,
   weeklyVolumeByMuscle,
+  effectiveHardSets,
   impliedSessionsPerWeek,
   limbAsymmetry,
   interpAt,
@@ -49,25 +50,49 @@ describe('strengthSeries — trend via the shared estimator', () => {
   });
 });
 
-describe('weeklyVolumeByMuscle — fractional credit, per-limb (SCIENCE.md §4)', () => {
-  it('counts per worked limb and excludes the skipped surgical side', () => {
+describe('effectiveHardSets — one unilateral round = one set (SCIENCE.md §4)', () => {
+  const sets = (line: string) => parseExerciseLine(line)!.sets;
+  it('counts a bilateral pec deck as its set count', () => {
+    expect(effectiveHardSets(sets('Pec Deck 300- 8.0, 7.0'))).toBe(2);
+  });
+  it('counts a split unilateral set once (L+R = 1), like the bilateral version', () => {
+    // one logged round done on each arm = 1 set, not 2
+    expect(effectiveHardSets(sets('Uni Pec Deck 100/100- 8.0/7.0'))).toBe(1);
+    // two rounds each side → 2
+    expect(effectiveHardSets(sets('Uni Leg Press 200/200- 10.0/10.0, 9.0/9.0'))).toBe(2);
+  });
+  it('is independent of how the unilateral set was written', () => {
+    const split = effectiveHardSets(sets('Uni Leg Ext 200/200- 10.0/10.0, 9.0/9.0'));
+    const plain = effectiveHardSets(sets('Uni Leg Ext 200- 10.0, 9.0'));
+    expect(split).toBe(plain); // 2 === 2
+  });
+  it('takes the working side when the surgical limb is skipped (zero reps)', () => {
+    expect(effectiveHardSets(sets('Uni Leg Ext 200/0- 10.0/0.0'))).toBe(1); // L works, R skipped
+  });
+  it('drops sets past RIR 3 (not hard)', () => {
+    expect(effectiveHardSets(sets('Pec Deck 300- 8.0, 8.5'))).toBe(1); // 8.5 = RIR 5
+  });
+});
+
+describe('weeklyVolumeByMuscle — fractional credit, per-side (SCIENCE.md §4)', () => {
+  it('counts a unilateral round once and excludes the skipped surgical side', () => {
     const sessions = [
       session('2026-02-01', 'Brick', [
-        'Uni Leg Press 200/100- 10.0/10.0', // L+R quads (2), glutes 0.5×2, ham 0.5×2
-        'Uni Leg Ext 200/0- 10.0/0.0', // L quads (1); R skipped (reps 0)
+        'Uni Leg Press 200/100- 10.0/10.0', // 1 round → quads 1, glutes 0.5
+        'Uni Leg Ext 200/0- 10.0/0.0', // L works, R skipped → quads 1
       ]),
     ];
     // 1 session at 1 session/week → weekly volume = that session's credited sets
     const vol = weeklyVolumeByMuscle(sessions, { sessionsPerWeek: 1 });
     const byMuscle = Object.fromEntries(vol.map((v) => [v.muscle, v.setsPerWeek]));
-    expect(byMuscle.quads).toBeCloseTo(3, 5); // 2 (leg press L/R) + 1 (leg ext L)
-    expect(byMuscle.glutes).toBeCloseTo(1, 5); // leg press secondary, 0.5 × 2 limbs
+    expect(byMuscle.quads).toBeCloseTo(2, 5); // 1 (leg press) + 1 (leg ext)
+    expect(byMuscle.glutes).toBeCloseTo(0.5, 5); // leg press secondary, 0.5 × 1 round
     expect(byMuscle.hamstrings).toBeUndefined(); // leg press no longer credits hamstrings
     const quads = vol.find((v) => v.muscle === 'quads')!;
-    expect(quads.status).toBe('below_mev'); // 3 < MEV 8
-    // breakdown: the 3 comes from leg press (2 limbs) + leg ext (1 limb), largest first
+    expect(quads.status).toBe('below_mev'); // 2 < MEV 8
+    // breakdown: 1 round each, largest first (tie → input order)
     expect(quads.contributions.map((c) => [c.rawName, c.role, c.hardSets, c.setsPerWeek])).toEqual([
-      ['Uni Leg Press', 'primary', 2, 2],
+      ['Uni Leg Press', 'primary', 1, 1],
       ['Uni Leg Ext', 'primary', 1, 1],
     ]);
   });

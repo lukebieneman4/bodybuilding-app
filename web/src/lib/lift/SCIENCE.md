@@ -82,8 +82,20 @@ zone (RP progressive-overload methodology). So the coach caps any single-week
 
 ## 4. Muscle attribution (primary 1.0 / secondary 0.5 fractional credit — a convention)
 
-Single-joint isolation = primary only. Unilateral sets counted per side; surgical-side
-`0.0`/zero-rep sets credit **0** volume to that limb.
+Single-joint isolation = primary only.
+
+**One unilateral set = one set, same as a bilateral set.** A left+right round of a
+unilateral lift (e.g. Uni Pec Deck) counts as **one** set toward weekly volume,
+exactly like one bilateral Pec Deck set — *not* two. The volume landmarks in §3
+are per muscle, and one round of unilateral work delivers one set's worth of
+stimulus, so summing the two limbs would read unilateral training as 2× its real
+volume against those landmarks (8 single-leg-press rounds = 8 for quads, not 16).
+Implementation: `effectiveHardSets = bilateral + max(L, R)` — the L/R pair
+collapses to one, and taking the working side means a skipped/zero-rep
+surgical-side limb credits **0** without dragging the number down. This also makes
+the count independent of *how* a set was written — `200/200- 8,8` (with a `/`
+split) and two plain `200- 8,8` sets now give the same volume. Left vs. right is
+still tracked independently for the asymmetry view (§5).
 
 | Logged exercise | Primary (1.0) | Secondary (0.5) |
 |---|---|---|

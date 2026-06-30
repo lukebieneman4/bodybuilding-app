@@ -13,7 +13,7 @@
 
 import { smooth } from '../core/estimator';
 import { dayDiff } from '../core/analysis';
-import type { LiftSession, Limb } from './types';
+import type { LiftSession, LiftSet, Limb } from './types';
 import { estimateE1RM, isHardSet, type Confidence } from './e1rm';
 import {
   musclesFor,
@@ -265,10 +265,52 @@ export interface VolumeContribution {
   /** Whether this exercise is a primary mover (1.0/set) or secondary (0.5/set) for the muscle. */
   role: 'primary' | 'secondary';
   creditPerSet: number;
-  /** Raw hard-set count in the window (each worked limb counted separately). */
+  /** Effective hard sets in the window — per side (unilateral L+R counts once). */
   hardSets: number;
+  /** How many of the window's sessions included this exercise (its frequency). */
+  sessions: number;
   /** This exercise's contribution to the muscle's weekly total. */
   setsPerWeek: number;
+}
+
+/**
+ * Effective hard sets toward a muscle from ONE logged exercise. A unilateral set
+ * is stored as two LiftSets (left + right) so asymmetry is trackable — but volume
+ * landmarks are defined PER SIDE, so the two limbs of one set count ONCE, not
+ * twice (RP / Schoenfeld: count unilateral sets per limb, not summed across
+ * limbs). Bilateral sets count as written; for a split set we take the higher
+ * side's count so a zero-rep surgical limb doesn't suppress the number. This also
+ * makes the count independent of whether the user wrote the set with a `/` split
+ * (e.g. "200/200- 8,8") or as two plain sets ("200- 8,8").
+ */
+export function effectiveHardSets(sets: LiftSet[]): number {
+  let bilateral = 0;
+  let left = 0;
+  let right = 0;
+  for (const s of sets) {
+    if (!isHardSet(s)) continue;
+    if (s.limb === 'L') left++;
+    else if (s.limb === 'R') right++;
+    else bilateral++;
+  }
+  return bilateral + Math.max(left, right);
+}
+
+/** Default averaging window for weekly volume, in weeks (whole rotations). */
+export const VOLUME_WINDOW_WEEKS = 2;
+
+/**
+ * The session window weekly volume is averaged over: the last
+ * `round(windowWeeks × sessionsPerWeek)` sessions (capped at what exists), and
+ * how many weeks that actually spans. Exposed so the UI can show its work.
+ */
+export function volumeWindow(
+  sessionCount: number,
+  sessionsPerWeek: number,
+  windowWeeks = VOLUME_WINDOW_WEEKS
+): { sessions: number; weeks: number } {
+  const k = Math.min(sessionCount, Math.max(1, Math.round(windowWeeks * sessionsPerWeek)));
+  return { sessions: k, weeks: k / sessionsPerWeek };
 }
 
 export interface MuscleVolume {
@@ -326,9 +368,10 @@ export function weeklyVolumeByMuscle(sessions: LiftSession[], opts: VolumeOption
   const dated = withDays(sessions);
   if (dated.length === 0) return [];
   const spw = opts.sessionsPerWeek ?? impliedSessionsPerWeek(sessions);
-  const windowWeeks = opts.windowWeeks ?? 2;
+  const windowWeeks = opts.windowWeeks ?? VOLUME_WINDOW_WEEKS;
   // average over the last whole-week(s) of sessions (≈ whole rotations)
-  const k = Math.min(dated.length, Math.max(1, Math.round(windowWeeks * spw)));
+  const win = volumeWindow(dated.length, spw, windowWeeks);
+  const k = win.sessions;
   const recent = dated.slice(-k);
 
   // accumulate hard-set counts per muscle, keyed by exercise (merged across gyms)
@@ -337,20 +380,23 @@ export function weeklyVolumeByMuscle(sessions: LiftSession[], opts: VolumeOption
     role: 'primary' | 'secondary';
     creditPerSet: number;
     hardSets: number;
+    sessions: number;
   }
   const byMuscle = new Map<Muscle, Map<string, Acc>>();
   const bump = (m: Muscle, exKey: string, rawName: string, role: 'primary' | 'secondary', creditPerSet: number, n: number) => {
     let mm = byMuscle.get(m);
     if (!mm) byMuscle.set(m, (mm = new Map()));
     const cur = mm.get(exKey);
-    if (cur) cur.hardSets += n;
-    else mm.set(exKey, { rawName, role, creditPerSet, hardSets: n });
+    if (cur) {
+      cur.hardSets += n;
+      cur.sessions += 1;
+    } else mm.set(exKey, { rawName, role, creditPerSet, hardSets: n, sessions: 1 });
   };
   for (const { session } of recent) {
     for (const ex of session.exercises) {
       const att = musclesFor(ex.key);
       if (!att) continue;
-      const n = ex.sets.filter(isHardSet).length;
+      const n = effectiveHardSets(ex.sets); // per side: unilateral L+R counts once
       if (n === 0) continue;
       for (const m of att.primary) bump(m, ex.key, ex.rawName, 'primary', PRIMARY_CREDIT, n);
       for (const m of att.secondary) bump(m, ex.key, ex.rawName, 'secondary', SECONDARY_CREDIT, n);
@@ -367,6 +413,7 @@ export function weeklyVolumeByMuscle(sessions: LiftSession[], opts: VolumeOption
         role: a.role,
         creditPerSet: a.creditPerSet,
         hardSets: a.hardSets,
+        sessions: a.sessions,
         setsPerWeek: a.creditPerSet * a.hardSets * scale,
       }))
       .sort((x, y) => y.setsPerWeek - x.setsPerWeek);
