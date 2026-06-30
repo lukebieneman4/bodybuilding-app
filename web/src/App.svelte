@@ -19,6 +19,12 @@
   let view = $state<'body' | 'lifts'>('body');
   let logMode = $state<'daily' | 'paste'>('daily');
 
+  const title = $derived(editing ? 'Profile' : view === 'body' ? 'Diet' : 'Lifts');
+  function go(v: 'body' | 'lifts'): void {
+    view = v;
+    editing = false;
+  }
+
   // Demo hook: /?liftdemo seeds the bundled training log so the lift views can be
   // viewed (and headlessly rendered) without manual paste. No-op without the flag.
   $effect(() => {
@@ -79,29 +85,19 @@
   }
 </script>
 
-<main>
-  <header class="topbar">
-    <div>
-      <h1>Trend</h1>
-      <span class="tag">evidence-based body &amp; diet tracking</span>
-    </div>
-    {#if profile}
-      <button class="ghost" onclick={() => (editing = !editing)}>
-        {editing ? 'Close' : 'Profile'}
-      </button>
-    {/if}
-  </header>
+<header class="appbar">
+  <h1>{title}</h1>
+  {#if profile}
+    <button class="ghost" onclick={() => (editing = !editing)}>
+      {editing ? 'Done' : 'Profile'}
+    </button>
+  {/if}
+</header>
 
+<main>
   {#if !profile || editing}
     <IntakeForm initial={profile} />
-    {#if editing}<button class="ghost center" onclick={() => (editing = false)}>Done</button>{/if}
-  {:else}
-    <nav class="tabs">
-      <button class:active={view === 'body'} onclick={() => (view = 'body')}>Bodyweight</button>
-      <button class:active={view === 'lifts'} onclick={() => (view = 'lifts')}>Lifts</button>
-    </nav>
-
-    {#if view === 'body'}
+  {:else if view === 'body'}
     <div class="tabs logtoggle">
       <button class:active={logMode === 'daily'} onclick={() => (logMode = 'daily')}>Daily</button>
       <button class:active={logMode === 'paste'} onclick={() => (logMode = 'paste')}>Paste log</button>
@@ -152,10 +148,20 @@
         {store.weighIns.length} weigh-ins · {store.calories.length} calorie days logged
       </p>
     </section>
-    {:else}
-      <LiftSection />
-    {/if}
+  {:else}
+    <LiftSection />
   {/if}
-
-  <footer>Local-first · your data stays in this browser</footer>
 </main>
+
+{#if profile}
+  <nav class="bottomnav">
+    <button class:active={view === 'body'} onclick={() => go('body')} aria-label="Diet">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 16 9 10 13 14 21 6" /></svg>
+      Diet
+    </button>
+    <button class:active={view === 'lifts'} onclick={() => go('lifts')} aria-label="Lifts">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5v11M3.5 9v6M17.5 6.5v11M20.5 9v6M6.5 12h11" /></svg>
+      Lifts
+    </button>
+  </nav>
+{/if}

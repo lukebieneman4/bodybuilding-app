@@ -1,13 +1,28 @@
 :root {
+  /* surfaces */
   --bg: #fbfaf7;
+  --card: #ffffff;
+  --bg-blur: rgba(251, 250, 247, 0.82);
+  /* ink */
   --ink: #1f2933;
   --sub: #6b7280;
   --line: #e7e2d8;
+  /* brand + semantics */
   --teal: #0e7c7b;
   --teal-d: #0a5f5e;
+  --good: #2e7d5b;
   --warn: #b4690e;
+  --over: #c0392b;
   --danger: #b3261e;
-  --card: #ffffff;
+  /* shape */
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow-1: 0 1px 2px rgba(31, 41, 51, 0.05);
+  --shadow-2: 0 6px 22px rgba(31, 41, 51, 0.09);
+  /* layout */
+  --maxw: 940px;
+  --navh: 60px;
+
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   color: var(--ink);
   background: var(--bg);
@@ -18,35 +33,74 @@
 body { margin: 0; background: var(--bg); }
 
 main {
-  max-width: 940px;
+  max-width: var(--maxw);
   margin: 0 auto;
-  padding: 20px 18px 60px;
+  padding: 16px 18px calc(var(--navh) + env(safe-area-inset-bottom, 0px) + 24px);
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.topbar {
+/* sticky compact header */
+.appbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+  padding: calc(env(safe-area-inset-top, 0px) + 14px) 18px 12px;
+  background: var(--bg-blur);
+  backdrop-filter: saturate(1.1) blur(10px);
+  -webkit-backdrop-filter: saturate(1.1) blur(10px);
+  border-bottom: 1px solid var(--line);
 }
-.topbar h1 {
+.appbar h1 {
   margin: 0;
-  font-size: 26px;
-  letter-spacing: -0.5px;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
 }
-.tag {
+
+/* fixed bottom tab bar (app-like, PWA) */
+.bottomnav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  background: var(--bg-blur);
+  backdrop-filter: saturate(1.1) blur(10px);
+  -webkit-backdrop-filter: saturate(1.1) blur(10px);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.bottomnav button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  height: var(--navh);
+  background: none;
+  border: none;
+  border-radius: 0;
   color: var(--sub);
-  font-size: 13px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
 }
+.bottomnav button.active { color: var(--teal); }
+.bottomnav svg { width: 23px; height: 23px; }
 
 .card {
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: var(--radius);
   padding: 18px;
-  box-shadow: 0 1px 2px rgba(31, 41, 51, 0.04);
+  box-shadow: var(--shadow-1);
 }
 .cardhead { margin-bottom: 6px; }
 .card h2 { margin: 0 0 2px; font-size: 17px; }
