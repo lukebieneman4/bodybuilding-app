@@ -179,6 +179,26 @@ progressions, coaching, data entry) and tuck the rest away. Render-inspected at
 - ✅ vitest 120/120, svelte-check 0 errors, production build clean; rendered &
   inspected at phone width (Playwright) for every piece.
 
+## M11 — Volume accuracy + priority muscles ✅
+- ✅ **Unilateral volume fix:** one unilateral set (L+R) now counts as **one** set,
+  like a bilateral set — was summing both limbs, so any lift logged with a `/`
+  split read 2× its real volume against the per-muscle landmarks (e.g. Uni Leg
+  Press 10.0/wk → correct 5.0/wk). `effectiveHardSets = bilateral + max(L,R)`;
+  result is independent of `/`-split vs plain logging; L/R still tracked for the
+  asymmetry view. SCIENCE.md §4 corrected. (Reported by the athlete.)
+- ✅ **Transparent breakdown:** each volume row shows its math — "2 sets × 2.5/wk
+  → 5.0/wk" and "over last N sessions ≈ M wk" — via `volumeWindow()` + a
+  per-exercise session (frequency) count.
+- ✅ **Soft-flag missing L/R split:** a "Uni" lift logged without a split parses
+  fine (volume unaffected) but loses asymmetry tracking — now a softer amber
+  *dotted* underline + preview note (vs wavy red "skipped" / wavy amber
+  "verify"). New `lineDiagnostics` 'unilateral' kind + 'note' MarkKind.
+- ✅ **Priority muscle groups** (`priority.ts`): auto-detected from program order
+  (lifts trained first = priorities), or pinned manually (presets + per-muscle
+  toggles). Priority to-dos lead the coach with a "★ priority" marker. Persisted
+  (`store.liftPriorities`, null = auto). New `PriorityMuscles` editor in the coach.
+- ✅ vitest 131/131, svelte-check 0 errors, build clean; render-inspected at 390px.
+
 ## Stretch
 - ⬜ AI coach (Claude API, free-form Q&A) — **rule-based coach now shipped (M9)**;
   Claude API layer over the structured data + rule engine is the remaining piece
