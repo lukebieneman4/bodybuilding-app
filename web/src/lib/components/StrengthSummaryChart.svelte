@@ -7,14 +7,11 @@
   const xLabel = $derived((t: number): string =>
     summary.startDate ? shortDate(summary.startDate, t) : t.toFixed(0));
 
-  let mode = $state<'muscle' | 'exercise'>('exercise');
-  const lines = $derived(mode === 'muscle' ? summary.byMuscle : summary.byExercise);
-
   const W = 880;
   const H = 380;
   const M = { t: 24, r: 18, b: 36, l: 44 };
 
-  // one colour per muscle group; lines inherit their primary muscle's colour
+  // one colour per muscle group (overview); lines inherit their primary muscle's colour
   const MUSCLE_COLORS: Record<string, string> = {
     chest: '#C0552B', lats: '#0E7C7B', traps: '#6B8E23', side_delt: '#C89B3C',
     rear_delt: '#8E6FB0', front_delt: '#D98A3D', biceps: '#2E7D5B', triceps: '#4F86C6',
@@ -24,7 +21,35 @@
   const colorFor = (m: string | null): string => (m && MUSCLE_COLORS[m]) || '#9AA5B1';
   const muscleName = (m: string | null): string => (m ? m.replace('_', ' ') : 'other');
 
+  // distinct categorical palette for the per-muscle drill-down (lines are one
+  // muscle, so colour-by-muscle no longer separates them — colour by exercise)
+  const CAT = ['#0E7C7B', '#C0552B', '#6B8E23', '#8E6FB0', '#C89B3C', '#4F86C6', '#B5651D', '#A0526B', '#557A95', '#2E7D5B'];
+  const catColor = (i: number): string => CAT[i % CAT.length];
+
   const palette = { sub: '#6B7280', base: '#A8B0BA' };
+
+  // 'overview' = one line per muscle group; otherwise drill into one body part.
+  let view = $state<string>('overview');
+  // muscle groups that have exercise lines, in overview (current-progress) order
+  const groups = $derived.by<string[]>(() => {
+    const order = summary.byMuscle.map((l) => l.muscle).filter((m): m is NonNullable<typeof m> => m != null);
+    const presentArr = summary.byExercise.map((l) => l.muscle).filter((m): m is NonNullable<typeof m> => m != null);
+    const present = new Set<string>(presentArr);
+    const ranked: string[] = [];
+    for (const m of order) if (present.has(m) && !ranked.includes(m)) ranked.push(m);
+    for (const m of presentArr) if (!ranked.includes(m)) ranked.push(m);
+    return ranked;
+  });
+  // keep the selection valid as data changes
+  $effect(() => {
+    if (view !== 'overview' && !groups.includes(view)) view = 'overview';
+  });
+
+  const lines = $derived(
+    view === 'overview' ? summary.byMuscle : summary.byExercise.filter((l) => l.muscle === view)
+  );
+  const strokeFor = (l: SummaryLine, i: number): string =>
+    view === 'overview' ? colorFor(l.muscle) : catColor(i);
 
   const yExtent = $derived.by<[number, number]>(() => {
     const vals = lines.flatMap((l) => l.points.map((p) => p.pct));
@@ -38,31 +63,35 @@
     return l.points.map((p, i) => `${i ? 'L' : 'M'}${x(p.day).toFixed(1)},${y(p.pct).toFixed(1)}`).join('');
   }
 
-  // legend: distinct muscles present, in display order of the lines
   const legend = $derived.by(() => {
-    const seen = new Set<string>();
-    const out: { muscle: string | null; color: string }[] = [];
-    for (const l of lines) {
-      const key = l.muscle ?? 'other';
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push({ muscle: l.muscle, color: colorFor(l.muscle) });
+    if (view === 'overview') {
+      const seen = new Set<string>();
+      const out: { label: string; color: string }[] = [];
+      for (const l of lines) {
+        const key = l.muscle ?? 'other';
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push({ label: muscleName(l.muscle), color: colorFor(l.muscle) });
+      }
+      return out;
     }
-    return out;
+    return lines.map((l, i) => ({ label: l.label, color: catColor(i) }));
   });
 </script>
 
 <div class="head">
-  <div class="toggle">
-    <button class:active={mode === 'muscle'} onclick={() => (mode = 'muscle')}>By muscle</button>
-    <button class:active={mode === 'exercise'} onclick={() => (mode = 'exercise')}>By exercise</button>
-  </div>
+  <select bind:value={view} class="picker" aria-label="View overall progress, or drill into one muscle group">
+    <option value="overview">Overview — by muscle group</option>
+    {#each groups as g}
+      <option value={g}>{muscleName(g)} — exercises</option>
+    {/each}
+  </select>
 </div>
 
 {#if lines.length === 0}
   <p class="hint">Log a few sessions of the same lifts to see overall strength trends.</p>
 {:else}
-  <svg viewBox="0 0 {W} {H}" class="chart" role="img" aria-label="Overall strength progress, indexed to each exercise's start">
+  <svg viewBox="0 0 {W} {H}" class="chart" role="img" aria-label="Strength progress, indexed to each exercise's start">
     {#each y.ticks(5) as t}
       <line x1={M.l} x2={W - M.r} y1={y(t)} y2={y(t)} stroke="#ECE8DF" stroke-width="1" />
       <text x={M.l - 8} y={y(t) + 3} text-anchor="end" font-size="11" fill={palette.sub}>{t}%</text>
@@ -75,52 +104,43 @@
     <line x1={M.l} x2={W - M.r} y1={y(100)} y2={y(100)} stroke={palette.base} stroke-width="1.2" stroke-dasharray="2 3" />
     <text x={W - M.r} y={y(100) - 5} text-anchor="end" font-size="10" fill={palette.sub}>start (100%)</text>
 
-    {#each lines as l}
-      <path d={path(l)} fill="none" stroke={colorFor(l.muscle)}
-        stroke-width={mode === 'muscle' ? 2.6 : 1.4}
+    {#each lines as l, i}
+      <path d={path(l)} fill="none" stroke={strokeFor(l, i)}
+        stroke-width={view === 'overview' ? 2.6 : 2}
         stroke-linejoin="round" stroke-linecap="round"
-        opacity={mode === 'muscle' ? 0.95 : 0.7} />
-      {#if mode === 'muscle' && l.points.length}
+        opacity={view === 'overview' ? 0.95 : 0.9} />
+      {#if l.points.length}
         <circle cx={x(l.points[l.points.length - 1].day)} cy={y(l.points[l.points.length - 1].pct)} r="3.5"
-          fill={colorFor(l.muscle)} stroke="white" stroke-width="1.4" />
+          fill={strokeFor(l, i)} stroke="white" stroke-width="1.4" />
       {/if}
     {/each}
   </svg>
 
   <div class="legend">
     {#each legend as item}
-      <span class="lg"><span class="sw" style="background:{item.color}"></span>{muscleName(item.muscle)}</span>
+      <span class="lg"><span class="sw" style="background:{item.color}"></span>{item.label}</span>
     {/each}
   </div>
   <p class="hint">
     Each line is a lift's e1RM indexed to its own first session (= 100%) — honest relative progress, since
     machine loads aren't comparable in absolute terms.
-    {mode === 'muscle'
-      ? ' Each line averages a muscle group’s currently-logged exercises — a change in which lifts (or gyms) are active can shift the average, so cross-check the by-exercise view.'
-      : ' One line per exercise, coloured by muscle group.'}
+    {view === 'overview'
+      ? ' Each line averages a muscle group’s currently-logged exercises — pick a group above to see its individual lifts.'
+      : ` Individual ${muscleName(view)} lifts, each on its own colour.`}
   </p>
 {/if}
 
 <style>
   .head { display: flex; justify-content: flex-end; margin-bottom: 8px; }
-  .toggle {
-    display: inline-flex;
-    gap: 4px;
-    background: #f1ede4;
-    border: 1px solid var(--line, #e7e2d8);
-    border-radius: 9px;
-    padding: 3px;
+  .picker {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--line, #E3DDD0);
+    border-radius: 8px;
+    font-size: 13px;
+    background: white;
+    color: var(--ink, #1f2933);
   }
-  .toggle button {
-    background: transparent;
-    border: none;
-    color: var(--sub, #6b7280);
-    font-size: 12px;
-    padding: 5px 12px;
-    border-radius: 7px;
-    cursor: pointer;
-  }
-  .toggle button.active { background: #fff; color: var(--ink, #1f2933); box-shadow: 0 1px 2px rgba(31, 41, 51, 0.06); }
   .chart { width: 100%; height: auto; display: block; font-family: system-ui, -apple-system, sans-serif; }
   .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 8px; }
   .lg { font-size: 11.5px; color: var(--sub, #6b7280); display: inline-flex; align-items: center; gap: 5px; text-transform: capitalize; }

@@ -49,7 +49,7 @@
     <section class="card">
       <div class="cardhead">
         <h2>Strength summary</h2>
-        <span class="hint">overall progress · every lift indexed to its own start · grouped by muscle</span>
+        <span class="hint">overall progress · indexed to each lift's start · drill into a muscle group</span>
       </div>
       <StrengthSummaryChart summary={analysis.summary} />
     </section>
