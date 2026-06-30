@@ -1,8 +1,24 @@
 <script lang="ts">
   import type { VolumeAction, StrengthFlag } from '../lift/advice';
   import { isTodo } from '../lift/advice';
+  import type { Muscle } from '../lift/muscles';
+  import PriorityMuscles from './PriorityMuscles.svelte';
 
-  let { actions, flags = [] }: { actions: VolumeAction[]; flags?: StrengthFlag[] } = $props();
+  let {
+    actions,
+    flags = [],
+    priorities = [],
+    autoDetected = [],
+  }: {
+    actions: VolumeAction[];
+    flags?: StrengthFlag[];
+    /** Active priority muscles (manual or auto) — their to-dos lead and get marked. */
+    priorities?: Muscle[];
+    /** Auto-detected priorities, for the editor's "auto" display. */
+    autoDetected?: Muscle[];
+  } = $props();
+
+  const prioSet = $derived(new Set<Muscle>(priorities));
 
   const KIND_COLOR: Record<string, string> = {
     add: '#B4690E',
@@ -30,7 +46,11 @@
   const FLAG_TOP = 2;
   let showAllTodos = $state(false);
   let showAllFlags = $state(false);
-  const visibleTodos = $derived(showAllTodos ? todos : todos.slice(0, TOP));
+  // priority muscles' to-dos lead; stable sort keeps severity order within groups
+  const rankedTodos = $derived(
+    [...todos].sort((a, b) => (prioSet.has(b.muscle) ? 1 : 0) - (prioSet.has(a.muscle) ? 1 : 0))
+  );
+  const visibleTodos = $derived(showAllTodos ? rankedTodos : rankedTodos.slice(0, TOP));
   const visibleFlags = $derived(showAllFlags ? flags : flags.slice(0, FLAG_TOP));
 </script>
 
@@ -39,6 +59,8 @@
     <h2>This week — coach</h2>
     <span class="hint">your most urgent moves first · zones are coach landmarks (±2 sets), not exact prescriptions</span>
   </div>
+
+  <PriorityMuscles auto={autoDetected} />
 
   {#if todos.length}
     <p class="summary">
@@ -52,7 +74,7 @@
         <li>
           <span class="chip" style="background:{KIND_COLOR[a.kind]}">{a.headline}</span>
           <div class="body">
-            <strong>{name(a.muscle)}</strong>
+            <strong>{name(a.muscle)}</strong>{#if prioSet.has(a.muscle)}<span class="prio-tag">★ priority</span>{/if}
             <p>{a.detail}</p>
             <span class="cite">{a.cite}</span>
           </div>
@@ -147,6 +169,14 @@
     font-size: 14px;
     text-transform: capitalize;
     color: var(--ink, #1f2933);
+  }
+  .prio-tag {
+    margin-left: 7px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #b4690e;
+    text-transform: none;
+    white-space: nowrap;
   }
   .body p {
     margin: 3px 0 2px;

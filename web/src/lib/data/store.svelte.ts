@@ -16,10 +16,12 @@ interface Persisted {
   liftLogEndDate: string;
   /** User-declared training density (sessions/week); null = auto-derive from the log. */
   liftSessionsPerWeek: number | null;
+  /** Manually pinned priority muscles; null/empty = auto-detect from program order. */
+  liftPriorities: string[] | null;
 }
 
 function load(): Persisted {
-  const empty: Persisted = { profile: null, weighIns: [], calories: [], liftSessions: [], liftLog: '', liftLogEndDate: '', liftSessionsPerWeek: null };
+  const empty: Persisted = { profile: null, weighIns: [], calories: [], liftSessions: [], liftLog: '', liftLogEndDate: '', liftSessionsPerWeek: null, liftPriorities: null };
   if (typeof localStorage === 'undefined') return empty;
   try {
     const raw = localStorage.getItem(KEY);
@@ -81,6 +83,14 @@ export const store = {
     data.liftSessionsPerWeek = spw;
     persist();
   },
+  get liftPriorities(): string[] | null {
+    return data.liftPriorities;
+  },
+  /** Pin priority muscles, or null/[] to auto-detect from program order. */
+  setLiftPriorities(muscles: string[] | null): void {
+    data.liftPriorities = muscles && muscles.length ? muscles : null;
+    persist();
+  },
   setLiftSessions(sessions: LiftSession[]): void {
     data.liftSessions = [...sessions].sort((a, b) => (a.date ?? '').localeCompare(b.date ?? ''));
     persist();
@@ -97,6 +107,7 @@ export const store = {
     data.liftLog = '';
     data.liftLogEndDate = '';
     data.liftSessionsPerWeek = null;
+    data.liftPriorities = null;
     persist();
   },
   importWeighIns(list: WeighIn[]): void {

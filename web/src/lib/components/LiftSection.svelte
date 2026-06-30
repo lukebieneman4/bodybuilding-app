@@ -2,6 +2,7 @@
   import { store } from '../data/store.svelte';
   import { analyzeLifts, impliedSessionsPerWeek, volumeWindow } from '../lift/analysis';
   import { volumeAdvice, regressingLifts } from '../lift/advice';
+  import { autoPriorities, resolvePriorities } from '../lift/priority';
   import LiftImport from './LiftImport.svelte';
   import StatStrip, { type Stat } from './StatStrip.svelte';
   import TrainingDensity from './TrainingDensity.svelte';
@@ -25,6 +26,10 @@
   // the session window weekly volume is averaged over — surfaced so the breakdown
   // can show its math (sets/session × frequency = sets/week).
   const window = $derived(volumeWindow(sessions.length, spw));
+  // priority muscles (manual pin, else auto-detected from program order) — drive
+  // the coach's ordering. Detect over the same window for relevance.
+  const autoDetected = $derived(autoPriorities(sessions, { windowSessions: window.sessions }));
+  const priorities = $derived(resolvePriorities(sessions, store.liftPriorities, { windowSessions: window.sessions }));
 
   const liftStats = $derived.by<Stat[]>(() => {
     if (!analysis) return [];
@@ -57,7 +62,7 @@
   <StatStrip stats={liftStats} />
 
   {#if advice.length || flags.length}
-    <VolumeCoach actions={advice} {flags} />
+    <VolumeCoach actions={advice} {flags} {priorities} {autoDetected} />
   {/if}
 
   {#if analysis.strength.length}
