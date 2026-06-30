@@ -10,6 +10,7 @@
   import WeightChart from './lib/components/WeightChart.svelte';
   import TDEEChart from './lib/components/TDEEChart.svelte';
   import Insights from './lib/components/Insights.svelte';
+  import StatStrip, { type Stat } from './lib/components/StatStrip.svelte';
   import LiftSection from './lib/components/LiftSection.svelte';
   import { parseWorkoutLog } from './lib/lift/parser';
   import { assignCadenceDates } from './lib/lift/dates';
@@ -51,6 +52,27 @@
       ? buildInsights(analysis, profile, store.weighIns, store.calories, intake?.current ?? null)
       : []
   );
+
+  // rate value is colored by on-track status (green on / amber slow / red fast);
+  // the Insights card below spells the status out in words. Folding the status
+  // read into the rate keeps the strip to three roomy cells at phone width.
+  const STATUS_COLOR = { on: '#2e7d5b', fast: '#c0392b', slow: '#b4690e' } as const;
+  const dietStats = $derived.by<Stat[]>(() => {
+    if (!analysis) return [];
+    const c = analysis.current;
+    const u = analysis.units;
+    const out: Stat[] = [
+      { label: 'Trend', value: c.trendDisplay.toFixed(1), sub: u },
+      {
+        label: 'Rate',
+        value: `${c.ratePerWk >= 0 ? '+' : '−'}${Math.abs(c.ratePerWk).toFixed(1)}`,
+        sub: `${u}/wk`,
+        color: STATUS_COLOR[c.status],
+      },
+    ];
+    if (intake) out.push({ label: 'Maintenance', value: Math.round(intake.current.tdee).toLocaleString(), sub: 'kcal' });
+    return out;
+  });
 
   async function onImport(e: Event): Promise<void> {
     const input = e.target as HTMLInputElement;
@@ -109,6 +131,7 @@
     {/if}
 
     {#if analysis}
+      <StatStrip stats={dietStats} />
       <section class="card chartcard">
         <div class="cardhead">
           <h2>Bodyweight trend</h2>

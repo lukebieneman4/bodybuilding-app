@@ -3,6 +3,7 @@
   import { analyzeLifts, impliedSessionsPerWeek } from '../lift/analysis';
   import { volumeAdvice, regressingLifts } from '../lift/advice';
   import LiftImport from './LiftImport.svelte';
+  import StatStrip, { type Stat } from './StatStrip.svelte';
   import TrainingDensity from './TrainingDensity.svelte';
   import VolumeCoach from './VolumeCoach.svelte';
   import StrengthLeaderboard from './StrengthLeaderboard.svelte';
@@ -21,12 +22,25 @@
   // per SCIENCE.md §5 while the ACL graft remodels.
   const advice = $derived(analysis ? volumeAdvice(analysis.volume, { rehabMuscles: ['quads', 'hamstrings', 'calves'] }) : []);
   const flags = $derived(analysis ? regressingLifts(analysis.strength) : []);
+
+  const liftStats = $derived.by<Stat[]>(() => {
+    if (!analysis) return [];
+    const withLm = analysis.volume.filter((v) => v.landmark);
+    const inZone = withLm.filter((v) => v.status === 'optimal').length;
+    const lifts = new Set(analysis.strength.map((s) => s.key)).size;
+    return [
+      { label: 'Sessions', value: String(sessions.length) },
+      { label: 'Lifts', value: String(lifts) },
+      { label: 'In zone', value: `${inZone}/${withLm.length}`, color: inZone > 0 ? '#2e7d5b' : undefined },
+    ];
+  });
 </script>
 
 {#if sessions.length === 0 || reimport}
   <LiftImport ondone={() => (reimport = false)} />
   {#if reimport}<button class="ghost center" onclick={() => (reimport = false)}>Cancel</button>{/if}
 {:else if analysis}
+  <StatStrip stats={liftStats} />
   <TrainingDensity {implied} />
 
   {#if advice.length || flags.length}

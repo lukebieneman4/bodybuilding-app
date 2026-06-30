@@ -14,7 +14,11 @@
   const name = (m: string): string => m.replace('_', ' ');
 
   const todos = $derived(actions.filter(isTodo));
-  const holds = $derived(actions.filter((a) => a.kind === 'hold'));
+  // 'hold' covers two cases: genuinely in the MAV band (status optimal) and
+  // "fed indirectly" muscles (e.g. front delts below MEV but driven by pressing).
+  // Keep them apart so "in the zone" means exactly that — and matches the strip.
+  const holds = $derived(actions.filter((a) => a.kind === 'hold' && a.status === 'optimal'));
+  const fedIndirect = $derived(actions.filter((a) => a.kind === 'hold' && a.status !== 'optimal'));
   const watches = $derived(actions.filter((a) => a.kind === 'watch'));
 
   // summary counts (the one-line picture, so the collapsed list still informs)
@@ -64,13 +68,16 @@
     <p class="allgood">✓ Every muscle with a target is in (or above) its productive zone this week — nothing to add.</p>
   {/if}
 
-  {#if holds.length || watches.length}
+  {#if holds.length || watches.length || fedIndirect.length}
     <div class="status">
       {#if holds.length}
         <span class="line"><b style="color:{KIND_COLOR.hold}">In the zone</b> {holds.map((h) => name(h.muscle)).join(', ')}</span>
       {/if}
       {#if watches.length}
         <span class="line"><b style="color:{KIND_COLOR.watch}">Near ceiling</b> {watches.map((w) => name(w.muscle)).join(', ')}</span>
+      {/if}
+      {#if fedIndirect.length}
+        <span class="line"><b>Fed indirectly</b> {fedIndirect.map((f) => name(f.muscle)).join(', ')} — direct work optional</span>
       {/if}
     </div>
   {/if}
