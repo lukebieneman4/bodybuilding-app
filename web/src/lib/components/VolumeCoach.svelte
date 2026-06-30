@@ -16,17 +16,35 @@
   const todos = $derived(actions.filter(isTodo));
   const holds = $derived(actions.filter((a) => a.kind === 'hold'));
   const watches = $derived(actions.filter((a) => a.kind === 'watch'));
+
+  // summary counts (the one-line picture, so the collapsed list still informs)
+  const adds = $derived(todos.filter((a) => a.kind === 'add' || a.kind === 'grow'));
+  const trims = $derived(todos.filter((a) => a.kind === 'reduce'));
+
+  // show the few most urgent to-dos (already severity-sorted); collapse the rest
+  const TOP = 3;
+  const FLAG_TOP = 2;
+  let showAllTodos = $state(false);
+  let showAllFlags = $state(false);
+  const visibleTodos = $derived(showAllTodos ? todos : todos.slice(0, TOP));
+  const visibleFlags = $derived(showAllFlags ? flags : flags.slice(0, FLAG_TOP));
 </script>
 
 <section class="card coach">
   <div class="cardhead">
     <h2>This week — coach</h2>
-    <span class="hint">what to adjust next week · zones are coach landmarks (±2 sets), not exact prescriptions</span>
+    <span class="hint">your most urgent moves first · zones are coach landmarks (±2 sets), not exact prescriptions</span>
   </div>
 
   {#if todos.length}
+    <p class="summary">
+      {#if adds.length}<span><b style="color:{KIND_COLOR.add}">{adds.length}</b> to add</span>{/if}
+      {#if trims.length}<span><b style="color:{KIND_COLOR.reduce}">{trims.length}</b> to ease back</span>{/if}
+      {#if holds.length}<span><b style="color:{KIND_COLOR.hold}">{holds.length}</b> in the zone</span>{/if}
+    </p>
+
     <ul class="todos">
-      {#each todos as a (a.muscle)}
+      {#each visibleTodos as a (a.muscle)}
         <li>
           <span class="chip" style="background:{KIND_COLOR[a.kind]}">{a.headline}</span>
           <div class="body">
@@ -37,6 +55,11 @@
         </li>
       {/each}
     </ul>
+    {#if todos.length > TOP}
+      <button class="more" onclick={() => (showAllTodos = !showAllTodos)}>
+        {showAllTodos ? 'Show fewer' : `Show ${todos.length - TOP} more`}
+      </button>
+    {/if}
   {:else}
     <p class="allgood">✓ Every muscle with a target is in (or above) its productive zone this week — nothing to add.</p>
   {/if}
@@ -56,7 +79,7 @@
     <div class="watch">
       <h3 class="subhead">Strength watch — lifts trending down</h3>
       <ul class="todos">
-        {#each flags as f (f.name)}
+        {#each visibleFlags as f (f.name)}
           <li>
             <span class="chip" style="background:#C0392B">▼ {Math.abs(Math.round(f.pctPerWeek))}%/wk</span>
             <div class="body">
@@ -67,11 +90,29 @@
           </li>
         {/each}
       </ul>
+      {#if flags.length > FLAG_TOP}
+        <button class="more" onclick={() => (showAllFlags = !showAllFlags)}>
+          {showAllFlags ? 'Show fewer' : `Show ${flags.length - FLAG_TOP} more`}
+        </button>
+      {/if}
     </div>
   {/if}
 </section>
 
 <style>
+  .summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin: 0 0 14px;
+    font-size: 13px;
+    color: var(--sub, #6b7280);
+  }
+  .summary b {
+    font-size: 15px;
+    margin-right: 3px;
+  }
+
   .todos {
     list-style: none;
     margin: 0;
@@ -111,6 +152,17 @@
     color: var(--sub, #6b7280);
     font-style: italic;
   }
+  .more {
+    margin-top: 12px;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--teal-d, #0a5f5e);
+    cursor: pointer;
+  }
+  .more:hover { text-decoration: underline; }
   .allgood {
     margin: 0;
     font-size: 13px;
