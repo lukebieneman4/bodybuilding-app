@@ -5,8 +5,7 @@
   import LiftImport from './LiftImport.svelte';
   import TrainingDensity from './TrainingDensity.svelte';
   import VolumeCoach from './VolumeCoach.svelte';
-  import StrengthChart from './StrengthChart.svelte';
-  import StrengthSummaryChart from './StrengthSummaryChart.svelte';
+  import StrengthLeaderboard from './StrengthLeaderboard.svelte';
   import VolumeChart from './VolumeChart.svelte';
   import SymmetryChart from './SymmetryChart.svelte';
 
@@ -22,23 +21,6 @@
   // per SCIENCE.md §5 while the ACL graft remodels.
   const advice = $derived(analysis ? volumeAdvice(analysis.volume, { rehabMuscles: ['quads', 'hamstrings', 'calves'] }) : []);
   const flags = $derived(analysis ? regressingLifts(analysis.strength) : []);
-
-  // strength series worth charting (≥2 points), most-logged first
-  const series = $derived(
-    (analysis?.strength ?? [])
-      .filter((s) => s.points.length >= 2)
-      .sort((a, b) => b.points.length - a.points.length)
-  );
-  const ids = $derived(series.map((s) => `${s.key}|${s.location ?? ''}|${s.limb ?? ''}`));
-  let selected = $state('');
-  // keep the selection valid as the available series change (initial load, reimport)
-  // so the <select> and the charted series never disagree.
-  $effect(() => {
-    if (series.length && !ids.includes(selected)) selected = ids[0];
-  });
-  const current = $derived(series.find((s, i) => ids[i] === selected) ?? series[0]);
-  const optLabel = (s: (typeof series)[number]): string =>
-    `${s.rawName}${s.limb ? ' (' + s.limb + ')' : ''}${s.location ? ' · ' + s.location : ''} — ${s.points.length} sessions`;
 </script>
 
 {#if sessions.length === 0 || reimport}
@@ -51,32 +33,15 @@
     <VolumeCoach actions={advice} {flags} />
   {/if}
 
-  {#if analysis.summary.byMuscle.length || analysis.summary.byExercise.length}
+  {#if analysis.strength.length}
     <section class="card">
       <div class="cardhead">
-        <h2>Strength summary</h2>
-        <span class="hint">overall progress · indexed to each lift's start · drill into a muscle group</span>
+        <h2>Strength progress</h2>
+        <span class="hint">estimated top-set (e1RM) per lift · indexed to its own start · tap a lift for its trend</span>
       </div>
-      <StrengthSummaryChart summary={analysis.summary} />
+      <StrengthLeaderboard strength={analysis.strength} />
     </section>
   {/if}
-
-  <section class="card">
-    <div class="cardhead">
-      <h2>Strength trend</h2>
-      <span class="hint">estimated top-set (e1RM) per exercise · self-relative index, not kg</span>
-    </div>
-    {#if series.length}
-      <select bind:value={selected} class="picker">
-        {#each series as s, i}
-          <option value={ids[i]}>{optLabel(s)}</option>
-        {/each}
-      </select>
-      {#if current}<StrengthChart series={current} />{/if}
-    {:else}
-      <p class="hint">Log a couple more sessions of the same lift to see a trend.</p>
-    {/if}
-  </section>
 
   <section class="card">
     <div class="cardhead">
@@ -105,15 +70,3 @@
     <p class="hint">{sessions.length} sessions loaded.</p>
   </section>
 {/if}
-
-<style>
-  .picker {
-    width: 100%;
-    margin-bottom: 10px;
-    padding: 8px 10px;
-    border: 1px solid var(--line, #E3DDD0);
-    border-radius: 8px;
-    font-size: 13px;
-    background: white;
-  }
-</style>
