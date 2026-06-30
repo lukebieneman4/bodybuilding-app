@@ -6,6 +6,7 @@
   import HighlightTextarea, { type MarkKind } from './HighlightTextarea.svelte';
 
   const units = $derived(store.profile?.units ?? 'lb');
+  const trackP = $derived(store.settings.trackProtein);
 
   // Prefill from existing data so this box VIEWS and EDITS the full running log,
   // not just appends — parity with the lift log. Saving replaces the series with
@@ -13,7 +14,8 @@
   const initUnits = store.profile?.units ?? 'lb';
   const initial = formatBulkLog(
     store.weighIns.map((w) => ({ date: w.date, weight: fromKg(w.weightKg, initUnits) })),
-    store.calories.map((c) => ({ date: c.date, kcal: c.kcal })),
+    store.calories.map((c) => ({ date: c.date, kcal: c.kcal, protein: c.protein })),
+    { protein: store.settings.trackProtein },
   );
   const hasExisting = initial.text !== '';
 
@@ -34,7 +36,7 @@
     const c: CalorieEntry[] = [];
     for (const r of rows) {
       if (r.weight !== null) w.push({ date: r.date, weightKg: toKg(r.weight, units) });
-      if (r.kcal !== null) c.push({ date: r.date, kcal: r.kcal });
+      if (r.kcal !== null) c.push({ date: r.date, kcal: r.kcal, ...(r.protein != null ? { protein: r.protein } : {}) });
     }
     // Full-log editor: replace the series with exactly what's in the box.
     store.setData(w, c);
@@ -48,26 +50,29 @@
   </div>
 
   <label class="full">
-    {hasExisting ? `Your weight log (${units} − calories), one day per line` : `Log (${units} − calories), one day per line`}
+    {hasExisting ? `Your log (${units} − calories${trackP ? ' − protein' : ''}), one day per line` : `Log (${units} − calories${trackP ? ' − protein' : ''}), one day per line`}
     <HighlightTextarea
       rows={8}
       bind:value={text}
       {marks}
-      ariaLabel="weight and calorie log"
-      placeholder={'201.2 - 2400\n200.5 - 2400\n200.1 - 2200\nNA - NA\n199.3 - 2600'}
+      ariaLabel="weight, calorie and protein log"
+      placeholder={trackP
+        ? '201.2 - 2400 - 180\n200.5 - 2400 - 175\n200.1 - 2200 - 185\nNA - NA - NA\n199.3 - 2600 - 190'
+        : '201.2 - 2400\n200.5 - 2400\n200.1 - 2200\nNA - NA\n199.3 - 2600'}
     />
   </label>
 
   <p class="hint">
-    Format <code>weight - calories</code>. Use <code>NA</code> (or leave blank) to skip a field — a
-    skipped day still counts so dates stay aligned. Calories are optional.
-    {#if hasExisting}<br />This is your full weight log — edit any line or append new days, then Save (replaces the series).{/if}
+    Format <code>weight - calories{trackP ? ' - protein' : ''}</code>. Use <code>NA</code> (or leave blank) to
+    skip a field — a skipped day still counts so dates stay aligned.{trackP ? ' Protein is in grams.' : ' Calories are optional.'}
+    {#if hasExisting}<br />This is your full log — edit any line or append new days, then Save (replaces the series).{/if}
   </p>
 
   {#if text.trim() !== ''}
     <div class="preview">
       <span class="pill">{stats.weighIns} weigh-ins</span>
       <span class="pill">{stats.calorieDays} calorie days</span>
+      {#if trackP && stats.proteinDays > 0}<span class="pill">{stats.proteinDays} protein days</span>{/if}
       {#if stats.from}<span class="pill muted">{stats.from} → {stats.to}</span>{/if}
       {#if stats.bad > 0}<span class="pill warn">{stats.bad} unreadable</span>{/if}
     </div>

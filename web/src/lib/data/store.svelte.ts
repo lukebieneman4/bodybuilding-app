@@ -1,4 +1,5 @@
-import type { Profile, WeighIn, CalorieEntry } from './types';
+import type { Profile, WeighIn, CalorieEntry, Settings } from './types';
+import { DEFAULT_SETTINGS } from './types';
 import type { LiftSession } from '../lift/types';
 
 /** Reactive, localStorage-backed app state (Svelte 5 runes). */
@@ -18,14 +19,19 @@ interface Persisted {
   liftSessionsPerWeek: number | null;
   /** Manually pinned priority muscles; null/empty = auto-detect from program order. */
   liftPriorities: string[] | null;
+  /** Feature preferences (toggles). */
+  settings: Settings;
 }
 
 function load(): Persisted {
-  const empty: Persisted = { profile: null, weighIns: [], calories: [], liftSessions: [], liftLog: '', liftLogEndDate: '', liftSessionsPerWeek: null, liftPriorities: null };
+  const empty: Persisted = { profile: null, weighIns: [], calories: [], liftSessions: [], liftLog: '', liftLogEndDate: '', liftSessionsPerWeek: null, liftPriorities: null, settings: { ...DEFAULT_SETTINGS } };
   if (typeof localStorage === 'undefined') return empty;
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? { ...empty, ...JSON.parse(raw) } : empty;
+    if (!raw) return empty;
+    const parsed = JSON.parse(raw);
+    // merge settings so toggles added in later versions default sensibly
+    return { ...empty, ...parsed, settings: { ...DEFAULT_SETTINGS, ...(parsed.settings ?? {}) } };
   } catch {
     return empty;
   }
@@ -81,6 +87,14 @@ export const store = {
   /** Set training density (sessions/week), or null to auto-derive from the log. */
   setLiftSessionsPerWeek(spw: number | null): void {
     data.liftSessionsPerWeek = spw;
+    persist();
+  },
+  get settings(): Settings {
+    return data.settings;
+  },
+  /** Update one preference toggle/value. */
+  setSetting<K extends keyof Settings>(key: K, value: Settings[K]): void {
+    data.settings[key] = value;
     persist();
   },
   get liftPriorities(): string[] | null {

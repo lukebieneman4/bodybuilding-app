@@ -14,7 +14,42 @@ export interface CalorieEntry {
   date: string;
   /** Energy intake in kilocalories. */
   kcal: number;
+  /** Protein intake in grams (optional — only when logged). */
+  protein?: number;
 }
+
+/**
+ * Feature preferences — every coaching layer is toggleable so the athlete can
+ * hide what they don't want (e.g. progression cues if they progress by feel).
+ * Defaults are on; merged with stored settings so new toggles appear enabled.
+ */
+export interface Settings {
+  /** Per-lift progression coach (next-session load/rep targets, stall detection). */
+  progressionCoach: boolean;
+  /** Track protein intake (log field, target, adherence). */
+  trackProtein: boolean;
+  /** Whether the protein target scales off total bodyweight or fat-free mass. */
+  proteinBasis: 'bodyweight' | 'leanmass';
+  /** Protein target in grams per kg of the chosen basis (see protein.ts refs). */
+  proteinTargetGPerKg: number;
+  /** Body-fat %, for the lean-mass basis (optional; falls back to bodyweight). */
+  bodyFatPct?: number;
+  /** Deload / fatigue-management coaching. */
+  deloadCoach: boolean;
+  /** Cross-domain insights linking diet and training. */
+  crossDomain: boolean;
+}
+
+export const DEFAULT_SETTINGS: Settings = {
+  progressionCoach: true,
+  trackProtein: true,
+  proteinBasis: 'bodyweight',
+  // 2.2 g/kg BW ≈ 1 g/lb — classic natural target; top of Morton 2018's CI and a
+  // safe deficit level (Iraki 2019). Lean-mass basis uses a higher default — see protein.ts.
+  proteinTargetGPerKg: 2.2,
+  deloadCoach: true,
+  crossDomain: true,
+};
 
 /** How the pace toward the goal is defined — the user picks exactly one. */
 export type PaceMode = 'rate' | 'date' | 'duration';

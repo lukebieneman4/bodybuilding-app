@@ -20,9 +20,11 @@ export interface BulkRow {
   weight: number | null;
   /** Parsed calories, or null if skipped. */
   kcal: number | null;
+  /** Parsed protein in grams, or null if not logged (optional 3rd field). */
+  protein: number | null;
   /** The original line text. */
   raw: string;
-  /** True when the line had content but neither field could be read. */
+  /** True when the line had content but no field could be read. */
   bad: boolean;
 }
 
@@ -59,10 +61,16 @@ export function parseBulkLog(text: string, startDate: string): BulkRow[] {
     const parts = raw.split(SEP_RE);
     const wTok = parts[0] ?? '';
     const kTok = parts[1] ?? '';
+    const pTok = parts[2] ?? ''; // optional protein (g)
     const weight = parseNum(wTok);
     const kcal = parseNum(kTok);
-    const bad = weight === null && kcal === null && !(isBlankOrSkip(wTok) && isBlankOrSkip(kTok));
-    return { date: isoPlus(startDate, i), weight, kcal, raw, bad };
+    const protein = parseNum(pTok);
+    const bad =
+      weight === null &&
+      kcal === null &&
+      protein === null &&
+      !(isBlankOrSkip(wTok) && isBlankOrSkip(kTok) && isBlankOrSkip(pTok));
+    return { date: isoPlus(startDate, i), weight, kcal, protein, raw, bad };
   });
 }
 
@@ -75,7 +83,8 @@ export function parseBulkLog(text: string, startDate: string): BulkRow[] {
  */
 export function formatBulkLog(
   weighIns: { date: string; weight: number }[],
-  calories: { date: string; kcal: number }[],
+  calories: { date: string; kcal: number; protein?: number }[],
+  opts: { protein?: boolean } = {},
 ): { text: string; startDate: string } {
   const all = [...weighIns.map((w) => w.date), ...calories.map((c) => c.date)].sort();
   if (all.length === 0) return { text: '', startDate: '' };
@@ -83,11 +92,19 @@ export function formatBulkLog(
   const end = all[all.length - 1];
   const wMap = new Map(weighIns.map((w) => [w.date, w.weight]));
   const kMap = new Map(calories.map((c) => [c.date, c.kcal]));
+  const pMap = new Map(calories.filter((c) => c.protein != null).map((c) => [c.date, c.protein!]));
   const lines: string[] = [];
   for (let d = start; d <= end; d = isoPlus(d, 1)) {
     const w = wMap.get(d);
     const k = kMap.get(d);
-    lines.push(`${w != null ? (+w).toFixed(1) : 'NA'} - ${k != null ? Math.round(k) : 'NA'}`);
+    const wStr = w != null ? (+w).toFixed(1) : 'NA';
+    const kStr = k != null ? String(Math.round(k)) : 'NA';
+    if (opts.protein) {
+      const p = pMap.get(d);
+      lines.push(`${wStr} - ${kStr} - ${p != null ? Math.round(p) : 'NA'}`);
+    } else {
+      lines.push(`${wStr} - ${kStr}`);
+    }
   }
   return { text: lines.join('\n'), startDate: start };
 }
@@ -95,6 +112,9 @@ export function formatBulkLog(
 export interface BulkStats {
   weighIns: number;
   calorieDays: number;
+  proteinDays: number;
+  /** Mean protein (g) over the days it was logged, or null. */
+  avgProtein: number | null;
   bad: number;
   from: string | null;
   to: string | null;
@@ -104,16 +124,24 @@ export interface BulkStats {
 export function summarize(rows: BulkRow[]): BulkStats {
   let weighIns = 0;
   let calorieDays = 0;
+  let proteinDays = 0;
+  let proteinSum = 0;
   let bad = 0;
   for (const r of rows) {
     if (r.weight !== null) weighIns++;
     if (r.kcal !== null) calorieDays++;
+    if (r.protein !== null) {
+      proteinDays++;
+      proteinSum += r.protein;
+    }
     if (r.bad) bad++;
   }
-  const dated = rows.filter((r) => r.weight !== null || r.kcal !== null);
+  const dated = rows.filter((r) => r.weight !== null || r.kcal !== null || r.protein !== null);
   return {
     weighIns,
     calorieDays,
+    proteinDays,
+    avgProtein: proteinDays ? proteinSum / proteinDays : null,
     bad,
     from: dated[0]?.date ?? null,
     to: dated[dated.length - 1]?.date ?? null,

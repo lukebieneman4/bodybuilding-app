@@ -11,6 +11,9 @@
   import TDEEChart from './lib/components/TDEEChart.svelte';
   import Insights from './lib/components/Insights.svelte';
   import StatStrip, { type Stat } from './lib/components/StatStrip.svelte';
+  import ProteinCard from './lib/components/ProteinCard.svelte';
+  import Settings from './lib/components/Settings.svelte';
+  import { proteinTargetGrams } from './lib/core/protein';
   import LiftSection from './lib/components/LiftSection.svelte';
   import { parseWorkoutLog } from './lib/lift/parser';
   import { assignCadenceDates } from './lib/lift/dates';
@@ -52,6 +55,11 @@
       ? buildInsights(analysis, profile, store.weighIns, store.calories, intake?.current ?? null)
       : []
   );
+
+  // protein adherence: target off current trend weight (or latest weigh-in)
+  const proteinEntries = $derived(store.calories.filter((c) => c.protein != null));
+  const bodyKg = $derived(analysis?.current.trendKg ?? store.weighIns.at(-1)?.weightKg ?? 0);
+  const proteinTarget = $derived(proteinTargetGrams(store.settings, bodyKg));
 
   // rate value is colored by on-track status (green on / amber slow / red fast);
   // the Insights card below spells the status out in words. Folding the status
@@ -119,6 +127,7 @@
 <main>
   {#if !profile || editing}
     <IntakeForm initial={profile} />
+    {#if profile}<Settings />{/if}
   {:else if view === 'body'}
     <div class="tabs logtoggle">
       <button class:active={logMode === 'daily'} onclick={() => (logMode = 'daily')}>Daily</button>
@@ -147,6 +156,9 @@
           </div>
           <TDEEChart analysis={intake} />
         </section>
+      {/if}
+      {#if store.settings.trackProtein && proteinEntries.length}
+        <ProteinCard entries={proteinEntries} targetGrams={proteinTarget} />
       {/if}
       <Insights {insights} />
     {:else}

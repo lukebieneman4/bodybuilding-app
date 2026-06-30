@@ -80,4 +80,25 @@ describe('parseBulkLog', () => {
     expect(s.from).toBe('2026-06-27');
     expect(s.to).toBe('2026-06-29');
   });
+
+  it('parses an optional third protein field and summarizes it', () => {
+    const rows = parseBulkLog('201.2 - 2400 - 180\n200.5 - 2400 - NA\n199.3 - 2600 - 190', '2026-06-27');
+    expect(rows.map((r) => r.protein)).toEqual([180, null, 190]);
+    expect(rows.some((r) => r.bad)).toBe(false);
+    const s = summarize(rows);
+    expect(s.proteinDays).toBe(2);
+    expect(s.avgProtein).toBe(185);
+  });
+
+  it('round-trips protein when the protein column is enabled', () => {
+    const weighIns = [{ date: '2026-06-27', weight: 201.2 }];
+    const calories = [
+      { date: '2026-06-27', kcal: 2400, protein: 180 },
+      { date: '2026-06-28', kcal: 2200 }, // no protein this day
+    ];
+    const { text } = formatBulkLog(weighIns, calories, { protein: true });
+    expect(text).toBe(['201.2 - 2400 - 180', 'NA - 2200 - NA'].join('\n'));
+    const rows = parseBulkLog(text, '2026-06-27');
+    expect(rows.map((r) => r.protein)).toEqual([180, null]);
+  });
 });
