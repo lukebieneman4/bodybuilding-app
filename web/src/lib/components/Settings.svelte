@@ -1,6 +1,7 @@
 <script lang="ts">
   import { store } from '../data/store.svelte';
   import { PROTEIN_GUIDANCE, PROTEIN_DEFAULT_G_PER_KG } from '../core/protein';
+  import { FAT_GUIDANCE } from '../core/macros';
 
   const s = $derived(store.settings);
   const guide = $derived(PROTEIN_GUIDANCE[s.proteinBasis]);
@@ -79,7 +80,43 @@
       </label>
     {/if}
 
-    <p class="hint">Recommended {guide.lo}–{guide.hi} g/kg ({guide.cite}).</p>
+    <p class="hint">Protein: recommended {guide.lo}–{guide.hi} g/kg ({guide.cite}).</p>
+
+    <div class="field">
+      <span>Macro targets</span>
+      <div class="seg">
+        <button class:on={s.macroMode === 'auto'} onclick={() => store.setSetting('macroMode', 'auto')}>Science-based</button>
+        <button class:on={s.macroMode === 'custom'} onclick={() => store.setSetting('macroMode', 'custom')}>Custom</button>
+      </div>
+    </div>
+
+    {#if s.macroMode === 'auto'}
+      <label class="field">
+        <span>Fat target <small>g per kg bodyweight ({FAT_GUIDANCE.lo}–{FAT_GUIDANCE.hi}; {FAT_GUIDANCE.cite})</small></span>
+        <input
+          type="number"
+          min="0.3"
+          max="2"
+          step="0.1"
+          value={s.fatTargetGPerKg}
+          onchange={(e) => store.setSetting('fatTargetGPerKg', +e.currentTarget.value)}
+        />
+      </label>
+      <p class="hint">Carbs fill the remaining calories of your goal target.</p>
+    {:else}
+      <label class="field">
+        <span>Protein <small>g/day</small></span>
+        <input type="number" min="0" step="5" value={s.customProteinG ?? ''} placeholder="—" onchange={(e) => store.setSetting('customProteinG', e.currentTarget.value ? +e.currentTarget.value : undefined)} />
+      </label>
+      <label class="field">
+        <span>Carbs <small>g/day</small></span>
+        <input type="number" min="0" step="5" value={s.customCarbG ?? ''} placeholder="—" onchange={(e) => store.setSetting('customCarbG', e.currentTarget.value ? +e.currentTarget.value : undefined)} />
+      </label>
+      <label class="field">
+        <span>Fat <small>g/day</small></span>
+        <input type="number" min="0" step="5" value={s.customFatG ?? ''} placeholder="—" onchange={(e) => store.setSetting('customFatG', e.currentTarget.value ? +e.currentTarget.value : undefined)} />
+      </label>
+    {/if}
   {/if}
 </section>
 

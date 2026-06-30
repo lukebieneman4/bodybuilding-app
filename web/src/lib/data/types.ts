@@ -34,6 +34,14 @@ export interface Settings {
   proteinTargetGPerKg: number;
   /** Body-fat %, for the lean-mass basis (optional; falls back to bodyweight). */
   bodyFatPct?: number;
+  /** Macro targets: science-based split, or the athlete's own gram targets. */
+  macroMode: 'auto' | 'custom';
+  /** Fat target, grams per kg bodyweight (auto mode; floored at 20% of calories). */
+  fatTargetGPerKg: number;
+  /** Custom daily gram targets (custom mode). */
+  customProteinG?: number;
+  customCarbG?: number;
+  customFatG?: number;
   /** Deload / fatigue-management coaching. */
   deloadCoach: boolean;
   /** Cross-domain insights linking diet and training. */
@@ -47,6 +55,9 @@ export const DEFAULT_SETTINGS: Settings = {
   // 2.2 g/kg BW ≈ 1 g/lb — classic natural target; top of Morton 2018's CI and a
   // safe deficit level (Iraki 2019). Lean-mass basis uses a higher default — see protein.ts.
   proteinTargetGPerKg: 2.2,
+  macroMode: 'auto',
+  // 0.8 g/kg BW — mid of the 0.5–1.5 range (Iraki 2019); floored at 20% kcal.
+  fatTargetGPerKg: 0.8,
   deloadCoach: true,
   crossDomain: true,
 };

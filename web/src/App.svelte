@@ -11,9 +11,10 @@
   import TDEEChart from './lib/components/TDEEChart.svelte';
   import Insights from './lib/components/Insights.svelte';
   import StatStrip, { type Stat } from './lib/components/StatStrip.svelte';
-  import ProteinCard from './lib/components/ProteinCard.svelte';
+  import MacrosCard from './lib/components/MacrosCard.svelte';
   import Settings from './lib/components/Settings.svelte';
-  import { proteinTargetGrams } from './lib/core/protein';
+  import { macroTargets } from './lib/core/macros';
+  import { KCAL_PER_KG_DEFAULT } from './lib/core/tdee';
   import LiftSection from './lib/components/LiftSection.svelte';
   import { parseWorkoutLog } from './lib/lift/parser';
   import { assignCadenceDates } from './lib/lift/dates';
@@ -56,10 +57,14 @@
       : []
   );
 
-  // protein adherence: target off current trend weight (or latest weigh-in)
+  // macro targets: off current trend weight + a goal-driven calorie target
+  // (maintenance shifted by the planned/ideal rate). Carbs fill the remainder.
   const proteinEntries = $derived(store.calories.filter((c) => c.protein != null));
   const bodyKg = $derived(analysis?.current.trendKg ?? store.weighIns.at(-1)?.weightKg ?? 0);
-  const proteinTarget = $derived(proteinTargetGrams(store.settings, bodyKg));
+  const calorieTarget = $derived(
+    intake && analysis ? intake.current.tdee + (analysis.current.idealRatePerWkKg * KCAL_PER_KG_DEFAULT) / 7 : 0
+  );
+  const macros = $derived(macroTargets(store.settings, bodyKg, calorieTarget));
 
   // rate value is colored by on-track status (green on / amber slow / red fast);
   // the Insights card below spells the status out in words. Folding the status
@@ -157,8 +162,8 @@
           <TDEEChart analysis={intake} />
         </section>
       {/if}
-      {#if store.settings.trackProtein && proteinEntries.length}
-        <ProteinCard entries={proteinEntries} targetGrams={proteinTarget} />
+      {#if store.settings.trackProtein && bodyKg > 0}
+        <MacrosCard targets={macros} {proteinEntries} />
       {/if}
       <Insights {insights} />
     {:else}
