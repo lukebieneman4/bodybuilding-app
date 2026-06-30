@@ -41,11 +41,11 @@
 </script>
 
 <svg viewBox="0 0 {W} {H}" class="chart" role="img" aria-label="Strength trend for {label}">
-  {#each y.ticks(5) as t}
-    <line x1={M.l} x2={W - M.r} y1={y(t)} y2={y(t)} stroke="#ECE8DF" stroke-width="1" />
+  {#each y.ticks(4) as t}
+    <line x1={M.l} x2={W - M.r} y1={y(t)} y2={y(t)} stroke="#F0ECE4" stroke-width="1" />
     <text x={M.l - 8} y={y(t) + 3} text-anchor="end" font-size="11" fill={palette.sub}>{t.toFixed(0)}</text>
   {/each}
-  {#each x.ticks(6) as t}
+  {#each x.ticks(5) as t}
     <text x={x(t)} y={H - M.b + 18} text-anchor="middle" font-size="11" fill={palette.sub}>{xLabel(t)}</text>
   {/each}
 
